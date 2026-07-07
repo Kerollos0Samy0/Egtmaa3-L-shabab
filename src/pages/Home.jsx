@@ -4,6 +4,8 @@ import { Calendar, Clock, BookOpen, MessageCircle, Lock } from 'lucide-react';
 
 const Home = () => {
   const [now, setNow] = useState(new Date().getTime());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [questionText, setQuestionText] = useState('');
 
   useEffect(() => {
     // Update time every minute to refresh visibility automatically
@@ -15,6 +17,21 @@ const Home = () => {
     const sessionTime = new Date(fullDateString).getTime();
     const twelveHoursMs = 12 * 60 * 60 * 1000;
     return now >= (sessionTime - twelveHoursMs);
+  };
+
+  const handleSendQuestion = () => {
+    if (!questionText.trim()) return;
+    const existing = JSON.parse(localStorage.getItem('questions') || '[]');
+    const newQuestion = {
+      id: Date.now(),
+      text: questionText,
+      timestamp: Date.now(),
+      answered: false
+    };
+    localStorage.setItem('questions', JSON.stringify([newQuestion, ...existing]));
+    setQuestionText('');
+    setIsModalOpen(false);
+    alert('تم إرسال سؤالك بنجاح! شكراً لمشاركتك.');
   };
 
   return (
@@ -94,6 +111,7 @@ const Home = () => {
 
       {/* Floating Ask Button */}
       <button 
+        onClick={() => setIsModalOpen(true)}
         style={{
           position: 'fixed',
           bottom: '20px',
@@ -110,12 +128,40 @@ const Home = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
-          zIndex: 1000,
+          zIndex: 100,
         }}
       >
         <MessageCircle size={20} />
         إسأل براحتك
       </button>
+
+      {/* Question Modal */}
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1000,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+        }}>
+          <div className="glass-panel" style={{
+            backgroundColor: 'white', padding: '30px', borderRadius: '15px', width: '100%', maxWidth: '400px'
+          }}>
+            <h3 style={{ color: 'var(--dark-green)', marginBottom: '15px' }}>اسأل براحتك (بدون اسم)</h3>
+            <textarea 
+              value={questionText}
+              onChange={(e) => setQuestionText(e.target.value)}
+              placeholder="اكتب سؤالك أو استفسارك هنا ولن يعرف أحد هويتك..."
+              style={{
+                width: '100%', height: '120px', padding: '15px', borderRadius: '10px',
+                border: '1px solid #ccc', marginBottom: '15px', fontSize: '1rem', resize: 'none'
+              }}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn-primary" style={{ flex: 1 }} onClick={handleSendQuestion}>إرسال السؤال</button>
+              <button className="btn-gold" style={{ flex: 1, backgroundColor: '#eee' }} onClick={() => setIsModalOpen(false)}>إلغاء</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
