@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { courseData } from '../data/courseData';
-import { Calendar, Clock, BookOpen, MessageCircle, Lock, BarChart2 } from 'lucide-react';
+import { Calendar, Clock, BookOpen, MessageCircle, Lock, BarChart2, QrCode } from 'lucide-react';
 import { database } from '../firebase';
 import { ref, push, set, onValue, runTransaction } from "firebase/database";
 
@@ -14,6 +14,7 @@ const Home = () => {
   const [myQuestions, setMyQuestions] = useState([]);
   const [livePoll, setLivePoll] = useState({ isActive: false, questionText: '', trueCount: 0, falseCount: 0 });
   const [hasVoted, setHasVoted] = useState(false);
+  const [showQr, setShowQr] = useState(false);
 
   useEffect(() => {
     // Load my questions
@@ -137,7 +138,10 @@ const Home = () => {
 
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2.5rem', color: 'var(--primary-green)', marginBottom: '10px', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>جدول الكورس</h2>
-        <p style={{ color: '#aaa', fontSize: '1.1rem' }}>تفضل بمتابعة أيام الكورس ومواعيد الفقرات</p>
+        <p style={{ color: '#aaa', fontSize: '1.1rem', marginBottom: '15px' }}>تفضل بمتابعة أيام الكورس ومواعيد الفقرات</p>
+        <button onClick={() => setShowQr(true)} className="btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 20px', borderRadius: '20px', fontSize: '0.9rem' }}>
+          <QrCode size={16} /> شارك الكورس مع صديق
+        </button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -313,6 +317,32 @@ const Home = () => {
               <button className="btn-gold" style={{ flex: 1 }} onClick={saveNotes}>حفظ الملاحظات</button>
               <button className="btn-primary" style={{ flex: 1, background: 'transparent', border: '1px solid var(--primary-green)', color: 'var(--primary-green)' }} onClick={() => setIsNotesOpen(false)}>إغلاق</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal for Youth */}
+      {showQr && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 2000,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-panel animate-fade-in" style={{
+            padding: '30px', borderRadius: '20px', textAlign: 'center', width: '100%', maxWidth: '400px',
+            border: '1px solid var(--accent-gold)', boxShadow: '0 0 30px rgba(255, 207, 51, 0.2)'
+          }}>
+            <h3 style={{ color: 'var(--accent-gold)', marginBottom: '15px', fontSize: '1.4rem' }}>أظهر الكود لصديقك</h3>
+            <div style={{ backgroundColor: 'white', padding: '15px', borderRadius: '15px', display: 'inline-block', marginBottom: '20px' }}>
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin)}`} 
+                alt="QR Code" 
+                style={{ width: '200px', height: '200px' }} 
+              />
+            </div>
+            <p style={{ color: 'var(--text-light)', marginBottom: '20px', fontSize: '0.9rem' }}>دع صديقك يفتح كاميرا هاتفه ويمسح هذا الكود ليدخل الاجتماع فوراً!</p>
+            <button onClick={() => setShowQr(false)} className="btn-primary" style={{ width: '100%' }}>إغلاق</button>
           </div>
         </div>
       )}
