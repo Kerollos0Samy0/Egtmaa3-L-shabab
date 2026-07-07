@@ -2,21 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Lock, Unlock, MessageCircle, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { database } from '../firebase';
-import { ref, onValue, update } from "firebase/database";
+import { ref, onValue, update, remove, set } from "firebase/database";
+import { BarChart2, Plus, Trash2, StopCircle } from 'lucide-react';
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [questions, setQuestions] = useState([]);
+  const [pollBank, setPollBank] = useState([
+    "الارتباط عن طريق الصالونات ناجح؟",
+    "الشكل الخارجي أهم من الطبع في البداية؟",
+    "الحدود ضرورية حتى في الخطوبة المتقدمة؟"
+  ]);
+  const [newPollQuestion, setNewPollQuestion] = useState('');
+  const [livePoll, setLivePoll] = useState({ isActive: false, questionText: '', trueCount: 0, falseCount: 0 });
 
   useEffect(() => {
     if (isAuthenticated) {
       const questionsRef = ref(database, 'questions');
-      const unsubscribe = onValue(questionsRef, (snapshot) => {
+      const unsubscribeQuestions = onValue(questionsRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          // Convert object to array, map id, and sort by timestamp descending
           const questionsArray = Object.keys(data).map(key => ({
             id: key,
             ...data[key]
@@ -26,9 +33,20 @@ const Admin = () => {
           setQuestions([]);
         }
       });
+
+      const livePollRef = ref(database, 'livePoll');
+      const unsubscribePoll = onValue(livePollRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setLivePoll(data);
+        } else {
+          setLivePoll({ isActive: false, questionText: '', trueCount: 0, falseCount: 0 });
+        }
+      });
       
       return () => {
-        unsubscribe();
+        unsubscribeQuestions();
+        unsubscribePoll();
       };
     }
   }, [isAuthenticated]);
@@ -46,7 +64,24 @@ const Admin = () => {
 
   const markAsAnswered = (id) => {
     const questionRef = ref(database, `questions/${id}`);
-    update(questionRef, { answered: true });
+    remove(questionRef);
+  };
+
+  const activatePoll = (questionText) => {
+    const livePollRef = ref(database, 'livePoll');
+    set(livePollRef, { isActive: true, questionText, trueCount: 0, falseCount: 0 });
+  };
+
+  const endPoll = () => {
+    const livePollRef = ref(database, 'livePoll');
+    update(livePollRef, { isActive: false });
+  };
+
+  const addToPollBank = () => {
+    if (newPollQuestion.trim() !== '') {
+      setPollBank([newPollQuestion, ...pollBank]);
+      setNewPollQuestion('');
+    }
   };
 
   if (!isAuthenticated) {
@@ -74,11 +109,65 @@ const Admin = () => {
   return (
     <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '2rem', color: 'var(--primary-green)', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>أسئلة الشباب</h2>
+        <h2 style={{ fontSize: '2rem', color: 'var(--primary-green)', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>لوحة تحكم الخدام</h2>
         <button onClick={() => setIsAuthenticated(false)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
           <Unlock size={16} /> تسجيل خروج
         </button>
       </div>
+
+      {/* Live Poll Section */}
+      <div className="glass-panel" style={{ padding: '25px', borderRadius: '15px', marginBottom: '30px', border: '1px solid var(--accent-gold)' }}>
+        <h3 style={{ color: 'var(--accent-gold)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <BarChart2 /> نظام التصويت اللحظي
+        </h3>
+        
+        {livePoll.isActive ? (
+          <div style={{ backgroundColor: 'rgba(0,0,0,0.5)', padding: '20px', borderRadius: '15px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '15px' }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'red', boxShadow: '0 0 10px red', animation: 'pulse 1s infinite' }} />
+              <h4 style={{ color: 'white', fontSize: '1.2rem' }}>التصويت مفعل الآن للشباب</h4>
+            </div>
+            <p style={{ color: 'var(--primary-green)', fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '20px' }}>{livePoll.questionText}</p>
+            
+            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginBottom: '20px' }}>
+              <div style={{ backgroundColor: 'rgba(0,255,136,0.2)', padding: '15px 30px', borderRadius: '15px', border: '1px solid var(--primary-green)' }}>
+                <p style={{ fontSize: '1.2rem', color: 'white' }}>صح ✅</p>
+                <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>{livePoll.trueCount}</p>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,68,68,0.2)', padding: '15px 30px', borderRadius: '15px', border: '1px solid #ff4444' }}>
+                <p style={{ fontSize: '1.2rem', color: 'white' }}>خطأ ❌</p>
+                <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ff4444' }}>{livePoll.falseCount}</p>
+              </div>
+            </div>
+            <button onClick={endPoll} className="btn-primary" style={{ background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)', display: 'flex', alignItems: 'center', gap: '10px', margin: '0 auto', boxShadow: '0 4px 15px rgba(255, 68, 68, 0.4)' }}>
+              <StopCircle size={20} /> إيقاف وإخفاء التصويت
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              <input 
+                type="text" 
+                value={newPollQuestion}
+                onChange={(e) => setNewPollQuestion(e.target.value)}
+                placeholder="أضف سؤال تصويت جديد لبنك الأسئلة..."
+                style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }}
+              />
+              <button onClick={addToPollBank} className="btn-gold" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Plus size={20} /> إضافة</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {pollBank.map((q, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <p style={{ color: 'white', fontSize: '1.1rem' }}>{q}</p>
+                  <button onClick={() => activatePoll(q)} className="btn-primary" style={{ padding: '8px 15px', fontSize: '0.9rem' }}>تفعيل الآن</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <h2 style={{ fontSize: '1.8rem', color: 'var(--primary-green)', marginBottom: '15px' }}>الأسئلة المجهولة الواردة</h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {questions.length === 0 ? (
@@ -101,7 +190,7 @@ const Admin = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <MessageCircle color={q.answered ? '#666' : 'var(--accent-gold)'} size={24} />
+                  <MessageCircle color={'var(--accent-gold)'} size={24} />
                   <div>
                     <p style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '5px', color: 'var(--text-light)' }}>{q.text}</p>
                     <span style={{ fontSize: '0.8rem', color: '#888' }}>
@@ -109,11 +198,9 @@ const Admin = () => {
                     </span>
                   </div>
                 </div>
-                {!q.answered && (
-                  <button onClick={() => markAsAnswered(q.id)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px' }}>
-                    <CheckCircle size={16} /> تم الرد
-                  </button>
-                )}
+                <button onClick={() => markAsAnswered(q.id)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px' }}>
+                  <Trash2 size={16} /> تم الرد (حذف)
+                </button>
               </motion.div>
             ))}
           </AnimatePresence>

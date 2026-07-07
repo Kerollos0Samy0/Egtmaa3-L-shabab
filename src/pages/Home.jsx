@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { courseData } from '../data/courseData';
-import { Calendar, Clock, BookOpen, MessageCircle, Lock } from 'lucide-react';
+import { Calendar, Clock, BookOpen, MessageCircle, Lock, BarChart2 } from 'lucide-react';
 import { database } from '../firebase';
-import { ref, push, set } from "firebase/database";
+import { ref, push, set, onValue, runTransaction } from "firebase/database";
 
 const Home = () => {
   const [now, setNow] = useState(new Date().getTime());
@@ -11,11 +11,35 @@ const Home = () => {
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [currentNoteSession, setCurrentNoteSession] = useState({ dayId: null, sessionTitle: '' });
   const [noteText, setNoteText] = useState('');
+  const [myQuestions, setMyQuestions] = useState([]);
+  const [livePoll, setLivePoll] = useState({ isActive: false, questionText: '', trueCount: 0, falseCount: 0 });
+  const [hasVoted, setHasVoted] = useState(false);
 
   useEffect(() => {
-    // Update time every minute to refresh visibility automatically
+    // Load my questions
+    const saved = JSON.parse(localStorage.getItem('myQuestions') || '[]');
+    setMyQuestions(saved);
+
+    // Listen to Live Poll
+    const livePollRef = ref(database, 'livePoll');
+    const unsubscribe = onValue(livePollRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setLivePoll(data);
+        // Check if voted for this specific question
+        const voted = localStorage.getItem(`voted_${data.questionText}`);
+        setHasVoted(!!voted);
+      } else {
+        setLivePoll({ isActive: false, questionText: '', trueCount: 0, falseCount: 0 });
+      }
+    });
+
+    // Update time every minute
     const interval = setInterval(() => setNow(new Date().getTime()), 60000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
   }, []);
 
   const isVisible = (fullDateString) => {
@@ -37,6 +61,10 @@ const Home = () => {
     const newQuestionRef = push(questionsRef);
     set(newQuestionRef, newQuestion)
       .then(() => {
+        const updatedMyQuestions = [newQuestion, ...myQuestions];
+        setMyQuestions(updatedMyQuestions);
+        localStorage.setItem('myQuestions', JSON.stringify(updatedMyQuestions));
+        
         setQuestionText('');
         setIsModalOpen(false);
         alert('تم إرسال سؤالك بنجاح! شكراً لمشاركتك.');
@@ -60,8 +88,53 @@ const Home = () => {
     alert('تم حفظ ملاحظاتك بنجاح على جهازك!');
   };
 
+  const handleVote = (voteType) => {
+    if (hasVoted) return;
+
+    const livePollRef = ref(database, 'livePoll');
+    runTransaction(livePollRef, (poll) => {
+      if (poll) {
+        if (voteType === 'true') {
+          poll.trueCount = (poll.trueCount || 0) + 1;
+        } else {
+          poll.falseCount = (poll.falseCount || 0) + 1;
+        }
+      }
+      return poll;
+    }).then(() => {
+      localStorage.setItem(`voted_${livePoll.questionText}`, 'true');
+      setHasVoted(true);
+    });
+  };
+
   return (
     <div className="animate-fade-in">
+      {/* Live Poll UI (Visible when poll is active) */}
+      {livePoll.isActive && (
+        <div style={{ backgroundColor: 'rgba(0,255,136,0.1)', border: '2px solid var(--primary-green)', padding: '25px', borderRadius: '20px', marginBottom: '30px', textAlign: 'center', boxShadow: '0 0 30px rgba(0,255,136,0.2)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '15px' }}>
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'red', boxShadow: '0 0 10px red', animation: 'pulse 1s infinite' }} />
+            <h3 style={{ color: 'white', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 /> تصويت لحظي</h3>
+          </div>
+          <p style={{ color: 'var(--primary-green)', fontSize: '1.6rem', fontWeight: 'bold', marginBottom: '25px' }}>{livePoll.questionText}</p>
+          
+          {hasVoted ? (
+            <div>
+              <p style={{ color: 'var(--accent-gold)', fontSize: '1.2rem', marginBottom: '15px' }}>شكراً لتصويتك! ✅</p>
+              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                <div style={{ color: 'white' }}>صح: <span style={{ color: 'var(--primary-green)', fontWeight: 'bold', fontSize: '1.2rem' }}>{livePoll.trueCount}</span></div>
+                <div style={{ color: 'white' }}>خطأ: <span style={{ color: '#ff4444', fontWeight: 'bold', fontSize: '1.2rem' }}>{livePoll.falseCount}</span></div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+              <button onClick={() => handleVote('true')} className="btn-primary" style={{ padding: '15px 30px', fontSize: '1.4rem', flex: 1, maxWidth: '200px' }}>صح ✅</button>
+              <button onClick={() => handleVote('false')} className="btn-primary" style={{ padding: '15px 30px', fontSize: '1.4rem', flex: 1, maxWidth: '200px', background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)', boxShadow: '0 4px 15px rgba(255, 68, 68, 0.4)' }}>خطأ ❌</button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2.5rem', color: 'var(--primary-green)', marginBottom: '10px', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>جدول الكورس</h2>
         <p style={{ color: '#aaa', fontSize: '1.1rem' }}>تفضل بمتابعة أيام الكورس ومواعيد الفقرات</p>
@@ -195,6 +268,22 @@ const Home = () => {
               <button className="btn-primary" style={{ flex: 1 }} onClick={handleSendQuestion}>إرسال السؤال</button>
               <button className="btn-gold" style={{ flex: 1 }} onClick={() => setIsModalOpen(false)}>إلغاء</button>
             </div>
+
+            {myQuestions.length > 0 && (
+              <div style={{ marginTop: '30px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+                <h4 style={{ color: 'var(--primary-green)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <MessageCircle size={18} /> أسئلتي السابقة
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '200px', overflowY: 'auto' }}>
+                  {myQuestions.map((q, i) => (
+                    <div key={i} style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <p style={{ color: 'var(--text-light)', marginBottom: '5px' }}>{q.text}</p>
+                      <span style={{ fontSize: '0.8rem', color: '#888' }}>{new Date(q.timestamp).toLocaleString('ar-EG')}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
