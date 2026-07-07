@@ -8,6 +8,9 @@ const Home = () => {
   const [now, setNow] = useState(new Date().getTime());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [questionText, setQuestionText] = useState('');
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [currentNoteSession, setCurrentNoteSession] = useState({ dayId: null, sessionTitle: '' });
+  const [noteText, setNoteText] = useState('');
 
   useEffect(() => {
     // Update time every minute to refresh visibility automatically
@@ -42,6 +45,19 @@ const Home = () => {
         console.error("Error saving question: ", error);
         alert('حدث خطأ أثناء إرسال السؤال. يرجى المحاولة مرة أخرى.');
       });
+  };
+
+  const openNotes = (dayId, sessionTitle) => {
+    setCurrentNoteSession({ dayId, sessionTitle });
+    const savedNote = localStorage.getItem(`note_${dayId}_${sessionTitle}`) || '';
+    setNoteText(savedNote);
+    setIsNotesOpen(true);
+  };
+
+  const saveNotes = () => {
+    localStorage.setItem(`note_${currentNoteSession.dayId}_${currentNoteSession.sessionTitle}`, noteText);
+    setIsNotesOpen(false);
+    alert('تم حفظ ملاحظاتك بنجاح على جهازك!');
   };
 
   return (
@@ -92,7 +108,11 @@ const Home = () => {
                       {session.title}
                     </div>
                     {session.type === 'session' && (
-                      <button className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <button 
+                        onClick={() => openNotes(day.id, session.title)}
+                        className="btn-primary" 
+                        style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px' }}
+                      >
                         <BookOpen size={14} /> ملاحظات
                       </button>
                     )}
@@ -174,6 +194,39 @@ const Home = () => {
             <div style={{ display: 'flex', gap: '15px' }}>
               <button className="btn-primary" style={{ flex: 1 }} onClick={handleSendQuestion}>إرسال السؤال</button>
               <button className="btn-gold" style={{ flex: 1 }} onClick={() => setIsModalOpen(false)}>إلغاء</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notes Modal */}
+      {isNotesOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-panel" style={{
+            padding: '30px', borderRadius: '20px', width: '100%', maxWidth: '500px',
+            border: '1px solid var(--accent-gold)',
+            boxShadow: '0 0 30px rgba(255, 207, 51, 0.2)'
+          }}>
+            <h3 style={{ color: 'var(--accent-gold)', marginBottom: '5px', fontSize: '1.3rem' }}>كراسة الملاحظات</h3>
+            <p style={{ color: 'var(--text-light)', marginBottom: '15px', fontSize: '0.9rem' }}>{currentNoteSession.sessionTitle}</p>
+            <textarea 
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="اكتب ملاحظاتك وتأملاتك هنا... سيتم حفظها على جهازك الخاص ولن يطلع عليها أحد."
+              style={{
+                width: '100%', height: '200px', padding: '15px', borderRadius: '15px',
+                border: '1px solid rgba(255,255,255,0.2)', marginBottom: '20px', fontSize: '1.1rem', resize: 'none',
+                backgroundColor: 'rgba(0,0,0,0.5)', color: 'white', lineHeight: '1.6'
+              }}
+            />
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <button className="btn-gold" style={{ flex: 1 }} onClick={saveNotes}>حفظ الملاحظات</button>
+              <button className="btn-primary" style={{ flex: 1, background: 'transparent', border: '1px solid var(--primary-green)', color: 'var(--primary-green)' }} onClick={() => setIsNotesOpen(false)}>إغلاق</button>
             </div>
           </div>
         </div>

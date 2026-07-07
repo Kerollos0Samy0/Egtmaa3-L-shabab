@@ -3,7 +3,7 @@ export const courseData = [
     id: 1,
     date: "11 / 7",
     fullDate: "2026-07-06T19:00:00",
-    title: "آبا أنا عايز أتجوز",
+    title: "آبا أنا عايز أتدوز!",
     sessions: [
       { time: "7:00 PM", title: "مفهوم الزواج الكنسي", type: "session" },
       { time: "8:30 PM", title: "بريك", type: "break" },
