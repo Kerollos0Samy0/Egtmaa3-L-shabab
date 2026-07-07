@@ -112,40 +112,14 @@ const Admin = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2rem', color: 'var(--primary-green)', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>لوحة تحكم الخدام</h2>
         <div style={{ display: 'flex', gap: '15px' }}>
-          <button onClick={() => setShowQr(true)} className="btn-gold" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px' }}>
-            <QrCode size={16} /> QR Code
+          <button onClick={() => window.open('/projector', '_blank')} className="btn-gold" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px' }}>
+            <QrCode size={16} /> شاشة العرض
           </button>
           <button onClick={() => setIsAuthenticated(false)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <Unlock size={16} /> تسجيل خروج
           </button>
         </div>
       </div>
-
-      {/* QR Code Modal */}
-      {showQr && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 2000,
-          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
-          backdropFilter: 'blur(5px)'
-        }}>
-          <div className="glass-panel" style={{
-            padding: '40px', borderRadius: '20px', textAlign: 'center',
-            border: '2px solid var(--accent-gold)'
-          }}>
-            <h3 style={{ color: 'var(--accent-gold)', marginBottom: '20px', fontSize: '1.5rem' }}>امسح الكود للدخول</h3>
-            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '15px', display: 'inline-block', marginBottom: '20px' }}>
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin)}`} 
-                alt="QR Code" 
-                style={{ width: '250px', height: '250px' }} 
-              />
-            </div>
-            <p style={{ color: '#aaa', marginBottom: '20px' }}>يمكنك عرض هذا الكود على شاشة البروجيكتور أو طباعته.</p>
-            <button onClick={() => setShowQr(false)} className="btn-primary" style={{ width: '100%' }}>إغلاق</button>
-          </div>
-        </div>
-      )}
 
       {/* Live Poll Section */}
       <div className="glass-panel" style={{ padding: '25px', borderRadius: '15px', marginBottom: '30px', border: '1px solid var(--accent-gold)' }}>

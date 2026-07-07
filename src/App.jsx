@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
 
+import Projector from './pages/Projector';
+
 function App() {
   return (
     <Router>
@@ -15,6 +17,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/projector" element={<Projector />} />
           </Routes>
         </main>
         <footer style={{ textAlign: 'center', padding: '20px', color: '#888', fontSize: '0.9rem' }}>
