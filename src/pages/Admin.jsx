@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, Unlock, MessageCircle, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { database } from '../firebase';
+import { ref, onValue, update } from "firebase/database";
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -8,30 +10,25 @@ const Admin = () => {
   const [error, setError] = useState('');
   const [questions, setQuestions] = useState([]);
 
-  const loadQuestions = () => {
-    const storedQuestions = JSON.parse(localStorage.getItem('questions') || '[]');
-    setQuestions(storedQuestions);
-  };
-
   useEffect(() => {
     if (isAuthenticated) {
-      loadQuestions();
-      
-      // Listen for changes from other tabs to mock real-time throwing
-      const handleStorage = (e) => {
-        if (e.key === 'questions') {
-          loadQuestions();
+      const questionsRef = ref(database, 'questions');
+      const unsubscribe = onValue(questionsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          // Convert object to array, map id, and sort by timestamp descending
+          const questionsArray = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+          })).sort((a, b) => b.timestamp - a.timestamp);
+          setQuestions(questionsArray);
+        } else {
+          setQuestions([]);
         }
-      };
-      
-      window.addEventListener('storage', handleStorage);
-      
-      // Also poll every 2 seconds just in case it's same tab or mobile weirdness
-      const interval = setInterval(loadQuestions, 2000);
+      });
       
       return () => {
-        window.removeEventListener('storage', handleStorage);
-        clearInterval(interval);
+        unsubscribe();
       };
     }
   }, [isAuthenticated]);
@@ -48,8 +45,8 @@ const Admin = () => {
   };
 
   const markAsAnswered = (id) => {
-    setQuestions(questions.map(q => q.id === id ? { ...q, answered: true } : q));
-    // In reality, update Firebase here
+    const questionRef = ref(database, `questions/${id}`);
+    update(questionRef, { answered: true });
   };
 
   if (!isAuthenticated) {

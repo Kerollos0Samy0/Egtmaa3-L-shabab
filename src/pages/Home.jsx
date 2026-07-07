@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { courseData } from '../data/courseData';
 import { Calendar, Clock, BookOpen, MessageCircle, Lock } from 'lucide-react';
+import { database } from '../firebase';
+import { ref, push, set } from "firebase/database";
 
 const Home = () => {
   const [now, setNow] = useState(new Date().getTime());
@@ -21,17 +23,25 @@ const Home = () => {
 
   const handleSendQuestion = () => {
     if (!questionText.trim()) return;
-    const existing = JSON.parse(localStorage.getItem('questions') || '[]');
+    
     const newQuestion = {
-      id: Date.now(),
       text: questionText,
       timestamp: Date.now(),
       answered: false
     };
-    localStorage.setItem('questions', JSON.stringify([newQuestion, ...existing]));
-    setQuestionText('');
-    setIsModalOpen(false);
-    alert('تم إرسال سؤالك بنجاح! شكراً لمشاركتك.');
+
+    const questionsRef = ref(database, 'questions');
+    const newQuestionRef = push(questionsRef);
+    set(newQuestionRef, newQuestion)
+      .then(() => {
+        setQuestionText('');
+        setIsModalOpen(false);
+        alert('تم إرسال سؤالك بنجاح! شكراً لمشاركتك.');
+      })
+      .catch((error) => {
+        console.error("Error saving question: ", error);
+        alert('حدث خطأ أثناء إرسال السؤال. يرجى المحاولة مرة أخرى.');
+      });
   };
 
   return (
