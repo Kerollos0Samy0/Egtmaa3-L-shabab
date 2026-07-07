@@ -173,10 +173,6 @@ const Home = () => {
                     borderRadius: '10px',
                     border: session.type === 'break' ? '1px dashed var(--accent-gold)' : '1px solid var(--glass-border)'
                   }}>
-                    <div style={{ color: 'var(--primary-green)', display: 'flex', alignItems: 'center', gap: '5px', width: '80px' }}>
-                      <Clock size={16} />
-                      <span style={{ fontSize: '0.9rem' }}>{session.time}</span>
-                    </div>
                     <div style={{ fontWeight: session.type === 'session' ? 'bold' : 'normal', flex: 1, color: session.type === 'break' ? 'var(--accent-gold)' : 'var(--text-light)' }}>
                       {session.title}
                     </div>
