@@ -29,7 +29,14 @@ const Home = () => {
           <div key={day.id} className="glass-panel" style={{ padding: '20px', borderRadius: '15px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--accent-gold)', paddingBottom: '10px', marginBottom: '15px' }}>
               <h3 style={{ fontSize: '1.4rem', color: 'var(--dark-green)' }}>
-                اليوم {day.id}: {day.title}
+                اليوم {day.id}:{' '}
+                <span style={{ 
+                  filter: day.id !== 1 ? 'blur(6px)' : 'none',
+                  userSelect: day.id !== 1 ? 'none' : 'auto',
+                  transition: 'filter 0.3s ease'
+                }}>
+                  {day.title}
+                </span>
               </h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#555', fontWeight: 'bold' }}>
                 <Calendar size={18} />
