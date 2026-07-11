@@ -3,11 +3,11 @@ export const courseData = [
     id: 1,
     date: "11 / 7",
     fullDate: "2026-07-06T19:00:00",
-    title: "آبا أنا عايز أتدوز!",
+    title: "آبا أنا عايز أتجوز",
     sessions: [
-      { time: "7:00 PM", title: "مفهوم الزواج الكنسي", type: "session" },
+      { time: "7:00 PM", title: "دوافع الارتباط", type: "session" },
       { time: "8:30 PM", title: "بريك", type: "break" },
-      { time: "9:00 PM", title: "دوافع الارتباط", type: "session" }
+      { time: "9:00 PM", title: "أعرف نفسي", type: "session" }
     ]
   },
   {
@@ -16,7 +16,7 @@ export const courseData = [
     fullDate: "2026-07-18T19:00:00",
     title: "مش عايز تتعرف عليا خالص؟",
     sessions: [
-      { time: "7:00 PM", title: "أعرف نفسي (ماديًا - نفسيًا - إدارة المشاكل)", type: "session" },
+      { time: "7:00 PM", title: "لغات الحب الخمسة", type: "session" },
       { time: "8:30 PM", title: "بريك", type: "break" },
       { time: "9:00 PM", title: "Green/Red Flags", type: "session" }
     ]
@@ -44,3 +44,4 @@ export const courseData = [
     ]
   }
 ];
+
