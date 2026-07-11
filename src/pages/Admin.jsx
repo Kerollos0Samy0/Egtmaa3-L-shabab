@@ -3,7 +3,7 @@ import { Lock, Unlock, MessageCircle, CheckCircle, Star, History } from 'lucide-
 import { motion, AnimatePresence } from 'framer-motion';
 import { database } from '../firebase';
 import { ref, onValue, update, remove, set, push } from "firebase/database";
-import { BarChart2, Plus, Trash2, StopCircle, QrCode } from 'lucide-react';
+import { BarChart2, Plus, Trash2, StopCircle, QrCode, Home as HomeIcon } from 'lucide-react';
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -148,6 +148,9 @@ const Admin = () => {
       <div className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2rem', color: 'var(--primary-green)', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>لوحة تحكم الخدام</h2>
         <div className="flex-col-mobile" style={{ display: 'flex', gap: '15px' }}>
+          <button onClick={() => window.location.href = '/'} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px', background: 'transparent', border: '1px solid var(--primary-green)', color: 'var(--primary-green)' }}>
+            <HomeIcon size={16} /> Home
+          </button>
           <button onClick={() => window.open('/projector', '_blank')} className="btn-gold" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px' }}>
             <QrCode size={16} /> شاشة العرض
           </button>
