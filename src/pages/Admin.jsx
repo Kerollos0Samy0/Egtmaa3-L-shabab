@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Unlock, MessageCircle, CheckCircle } from 'lucide-react';
+import { Lock, Unlock, MessageCircle, CheckCircle, Star, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { database } from '../firebase';
-import { ref, onValue, update, remove, set } from "firebase/database";
+import { ref, onValue, update, remove, set, push } from "firebase/database";
 import { BarChart2, Plus, Trash2, StopCircle, QrCode } from 'lucide-react';
 
 const Admin = () => {
@@ -10,6 +10,8 @@ const Admin = () => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [questions, setQuestions] = useState([]);
+  const [pollHistory, setPollHistory] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [pollBank, setPollBank] = useState([
     "الارتباط عن طريق الصالونات ناجح؟",
     "الشكل الخارجي أهم من الطبع في البداية؟",
@@ -45,9 +47,33 @@ const Admin = () => {
         }
       });
       
+      const historyRef = ref(database, 'pollHistory');
+      const unsubscribeHistory = onValue(historyRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const historyArray = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a, b) => b.timestamp - a.timestamp);
+          setPollHistory(historyArray);
+        } else {
+          setPollHistory([]);
+        }
+      });
+
+      const feedbackRef = ref(database, 'feedback');
+      const unsubscribeFeedback = onValue(feedbackRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const feedbackArray = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a, b) => b.timestamp - a.timestamp);
+          setFeedbacks(feedbackArray);
+        } else {
+          setFeedbacks([]);
+        }
+      });
+
       return () => {
         unsubscribeQuestions();
         unsubscribePoll();
+        unsubscribeHistory();
+        unsubscribeFeedback();
       };
     }
   }, [isAuthenticated]);
@@ -74,6 +100,16 @@ const Admin = () => {
   };
 
   const endPoll = () => {
+    if (livePoll.questionText) {
+      const historyRef = ref(database, 'pollHistory');
+      push(historyRef, {
+        questionText: livePoll.questionText,
+        trueCount: livePoll.trueCount || 0,
+        falseCount: livePoll.falseCount || 0,
+        timestamp: Date.now()
+      });
+    }
+
     const livePollRef = ref(database, 'livePoll');
     update(livePollRef, { isActive: false });
   };
@@ -170,6 +206,65 @@ const Admin = () => {
               ))}
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Poll History Section */}
+      {pollHistory.length > 0 && (
+        <div className="glass-panel" style={{ padding: '25px', borderRadius: '15px', marginBottom: '30px', border: '1px solid #444' }}>
+          <h3 style={{ color: 'var(--text-light)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <History /> أرشيف التصويتات
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto', paddingRight: '10px' }}>
+            {pollHistory.map((poll) => (
+              <div key={poll.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div>
+                  <p style={{ color: 'white', fontSize: '1.1rem', marginBottom: '5px' }}>{poll.questionText}</p>
+                  <span style={{ fontSize: '0.8rem', color: '#888' }}>{new Date(poll.timestamp).toLocaleString('ar-EG')}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '15px', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--primary-green)', fontWeight: 'bold' }}>صح: {poll.trueCount}</div>
+                  <div style={{ color: '#ff4444', fontWeight: 'bold' }}>خطأ: {poll.falseCount}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Feedbacks Section */}
+      <h2 style={{ fontSize: '1.8rem', color: 'var(--accent-gold)', marginBottom: '15px' }}>تقييمات الشباب (Feedback)</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+        {feedbacks.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#aaa' }}>لا توجد تقييمات حالياً.</p>
+        ) : (
+          <AnimatePresence>
+            {feedbacks.map((f, i) => (
+              <motion.div 
+                key={f.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-panel" 
+                style={{ 
+                  padding: '20px', borderRadius: '15px', display: 'flex', 
+                  flexDirection: 'column', gap: '10px',
+                  borderRight: '4px solid var(--accent-gold)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} size={20} fill={star <= f.rating ? "var(--accent-gold)" : "transparent"} color={star <= f.rating ? "var(--accent-gold)" : "#666"} />
+                    ))}
+                  </div>
+                  <span style={{ fontSize: '0.8rem', color: '#888' }}>
+                    {new Date(f.timestamp).toLocaleString('ar-EG')}
+                  </span>
+                </div>
+                {f.text && <p style={{ color: 'var(--text-light)', fontSize: '1.1rem' }}>{f.text}</p>}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
 

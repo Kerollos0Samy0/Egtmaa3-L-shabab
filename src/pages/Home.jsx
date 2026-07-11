@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { courseData } from '../data/courseData';
-import { Calendar, Clock, BookOpen, MessageCircle, Lock, BarChart2, QrCode } from 'lucide-react';
+import { Calendar, Clock, BookOpen, MessageCircle, Lock, BarChart2, QrCode, Star } from 'lucide-react';
 import { database } from '../firebase';
 import { ref, push, set, onValue, runTransaction } from "firebase/database";
 
@@ -15,6 +15,9 @@ const Home = () => {
   const [livePoll, setLivePoll] = useState({ isActive: false, questionText: '', trueCount: 0, falseCount: 0 });
   const [hasVoted, setHasVoted] = useState(false);
   const [showQr, setShowQr] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackText, setFeedbackText] = useState('');
 
   useEffect(() => {
     // Load my questions
@@ -87,6 +90,28 @@ const Home = () => {
     localStorage.setItem(`note_${currentNoteSession.dayId}_${currentNoteSession.sessionTitle}`, noteText);
     setIsNotesOpen(false);
     alert('تم حفظ ملاحظاتك بنجاح على جهازك!');
+  };
+
+  const handleSendFeedback = () => {
+    if (feedbackRating === 0) {
+      alert('يرجى اختيار التقييم بالنجوم أولاً');
+      return;
+    }
+    const feedbackRef = ref(database, 'feedback');
+    const newFeedbackRef = push(feedbackRef);
+    set(newFeedbackRef, {
+      rating: feedbackRating,
+      text: feedbackText,
+      timestamp: Date.now()
+    }).then(() => {
+      setFeedbackRating(0);
+      setFeedbackText('');
+      setIsFeedbackModalOpen(false);
+      alert('شكراً لتقييمك! رأيك يهمنا جداً.');
+    }).catch(err => {
+      console.error(err);
+      alert('حدث خطأ أثناء الإرسال، حاول مرة أخرى.');
+    });
   };
 
   const handleVote = (voteType) => {
@@ -214,31 +239,50 @@ const Home = () => {
         ))}
       </div>
 
-      {/* Floating Ask Button */}
-      <button 
-        onClick={() => setIsModalOpen(true)}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          backgroundColor: 'var(--dark-green)',
-          color: 'var(--accent-gold)',
-          border: 'none',
-          padding: '15px 25px',
-          borderRadius: '30px',
-          fontSize: '1rem',
-          fontWeight: 'bold',
-          boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          zIndex: 100,
-        }}
-      >
-        <MessageCircle size={20} />
-        إسأل براحتك
-      </button>
+      {/* Floating Buttons */}
+      <div style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', gap: '15px', zIndex: 100 }}>
+        <button 
+          onClick={() => setIsFeedbackModalOpen(true)}
+          style={{
+            backgroundColor: 'var(--accent-gold)',
+            color: 'var(--dark-green)',
+            border: 'none',
+            padding: '15px 25px',
+            borderRadius: '30px',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            boxShadow: '0 5px 15px rgba(255, 207, 51, 0.3)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+        >
+          <Star size={20} fill="var(--dark-green)" />
+          تقييم اليوم
+        </button>
+
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          style={{
+            backgroundColor: 'var(--dark-green)',
+            color: 'var(--accent-gold)',
+            border: 'none',
+            padding: '15px 25px',
+            borderRadius: '30px',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+        >
+          <MessageCircle size={20} />
+          إسأل براحتك
+        </button>
+      </div>
 
       {/* Question Modal */}
       {isModalOpen && (
@@ -343,6 +387,54 @@ const Home = () => {
             </div>
             <p style={{ color: 'var(--text-light)', marginBottom: '20px', fontSize: '0.9rem' }}>دع صديقك يفتح كاميرا هاتفه ويمسح هذا الكود ليدخل الاجتماع فوراً!</p>
             <button onClick={() => setShowQr(false)} className="btn-primary" style={{ width: '100%' }}>إغلاق</button>
+          </div>
+        </div>
+      )}
+      {/* Feedback Modal */}
+      {isFeedbackModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-panel animate-fade-in" style={{
+            padding: '30px', borderRadius: '20px', width: '100%', maxWidth: '400px',
+            border: '1px solid var(--accent-gold)',
+            boxShadow: '0 0 30px rgba(255, 207, 51, 0.2)',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ color: 'var(--accent-gold)', marginBottom: '15px', fontSize: '1.5rem' }}>تقييم اليوم</h3>
+            <p style={{ color: 'white', marginBottom: '20px', fontSize: '1rem' }}>رأيك يساعدنا نطور الكورس ونفهم احتياجاتك أكثر</p>
+            
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button 
+                  key={star} 
+                  onClick={() => setFeedbackRating(star)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', transition: 'transform 0.2s ease' }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <Star size={35} fill={star <= feedbackRating ? "var(--accent-gold)" : "transparent"} color={star <= feedbackRating ? "var(--accent-gold)" : "#666"} />
+                </button>
+              ))}
+            </div>
+
+            <textarea 
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              placeholder="اكتب تعليقك أو أي حاجة حابب تشاركنا بيها (اختياري)..."
+              style={{
+                width: '100%', height: '120px', padding: '15px', borderRadius: '15px',
+                border: '1px solid rgba(255,255,255,0.2)', marginBottom: '20px', fontSize: '1.1rem', resize: 'none',
+                backgroundColor: 'rgba(0,0,0,0.5)', color: 'white'
+              }}
+            />
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <button className="btn-gold" style={{ flex: 1 }} onClick={handleSendFeedback}>إرسال التقييم</button>
+              <button className="btn-primary" style={{ flex: 1, background: 'transparent', border: '1px solid var(--primary-green)', color: 'var(--primary-green)' }} onClick={() => setIsFeedbackModalOpen(false)}>إلغاء</button>
+            </div>
           </div>
         </div>
       )}
