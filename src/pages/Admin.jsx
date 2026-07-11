@@ -158,7 +158,7 @@ const Admin = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (pin === '1234') { // Simple hardcoded PIN
+    if (pin === 'YoUssef-2026') { // Simple hardcoded PIN
       setIsAuthenticated(true);
       setError('');
     } else {
