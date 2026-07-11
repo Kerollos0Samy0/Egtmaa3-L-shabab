@@ -145,9 +145,9 @@ const Admin = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2rem', color: 'var(--primary-green)', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>لوحة تحكم الخدام</h2>
-        <div style={{ display: 'flex', gap: '15px' }}>
+        <div className="flex-col-mobile" style={{ display: 'flex', gap: '15px' }}>
           <button onClick={() => window.open('/projector', '_blank')} className="btn-gold" style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px' }}>
             <QrCode size={16} /> شاشة العرض
           </button>
@@ -171,7 +171,7 @@ const Admin = () => {
             </div>
             <p style={{ color: 'var(--primary-green)', fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '20px' }}>{livePoll.questionText}</p>
             
-            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginBottom: '20px' }}>
+            <div className="flex-col-mobile" style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginBottom: '20px' }}>
               <div style={{ backgroundColor: 'rgba(0,255,136,0.2)', padding: '15px 30px', borderRadius: '15px', border: '1px solid var(--primary-green)' }}>
                 <p style={{ fontSize: '1.2rem', color: 'white' }}>صح ✅</p>
                 <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>{livePoll.trueCount}</p>
@@ -187,7 +187,7 @@ const Admin = () => {
           </div>
         ) : (
           <div>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <div className="flex-col-mobile" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <input 
                 type="text" 
                 value={newPollQuestion}
@@ -199,7 +199,7 @@ const Admin = () => {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {pollBank.map((q, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div key={i} className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <p style={{ color: 'white', fontSize: '1.1rem' }}>{q}</p>
                   <button onClick={() => activatePoll(q)} className="btn-primary" style={{ padding: '8px 15px', fontSize: '0.9rem' }}>تفعيل الآن</button>
                 </div>
@@ -217,7 +217,7 @@ const Admin = () => {
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto', paddingRight: '10px' }}>
             {pollHistory.map((poll) => (
-              <div key={poll.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div key={poll.id} className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <div>
                   <p style={{ color: 'white', fontSize: '1.1rem', marginBottom: '5px' }}>{poll.questionText}</p>
                   <span style={{ fontSize: '0.8rem', color: '#888' }}>{new Date(poll.timestamp).toLocaleString('ar-EG')}</span>
@@ -251,7 +251,7 @@ const Admin = () => {
                   borderRight: '4px solid var(--accent-gold)'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', gap: '5px' }}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star key={star} size={20} fill={star <= f.rating ? "var(--accent-gold)" : "transparent"} color={star <= f.rating ? "var(--accent-gold)" : "#666"} />

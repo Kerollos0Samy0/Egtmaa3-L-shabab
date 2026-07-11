@@ -147,13 +147,13 @@ const Home = () => {
           {hasVoted ? (
             <div>
               <p style={{ color: 'var(--accent-gold)', fontSize: '1.2rem', marginBottom: '15px' }}>شكراً لتصويتك! ✅</p>
-              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+              <div className="flex-col-mobile" style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
                 <div style={{ color: 'white' }}>صح: <span style={{ color: 'var(--primary-green)', fontWeight: 'bold', fontSize: '1.2rem' }}>{livePoll.trueCount}</span></div>
                 <div style={{ color: 'white' }}>خطأ: <span style={{ color: '#ff4444', fontWeight: 'bold', fontSize: '1.2rem' }}>{livePoll.falseCount}</span></div>
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+            <div className="flex-col-mobile" style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
               <button onClick={() => handleVote('true')} className="btn-primary" style={{ padding: '15px 30px', fontSize: '1.4rem', flex: 1, maxWidth: '200px' }}>صح ✅</button>
               <button onClick={() => handleVote('false')} className="btn-primary" style={{ padding: '15px 30px', fontSize: '1.4rem', flex: 1, maxWidth: '200px', background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)', boxShadow: '0 4px 15px rgba(255, 68, 68, 0.4)' }}>خطأ ❌</button>
             </div>
@@ -162,7 +162,7 @@ const Home = () => {
       )}
 
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '2.5rem', color: 'var(--primary-green)', marginBottom: '10px', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>جدول الكورس</h2>
+        <h2 className="title-mobile" style={{ fontSize: '2.5rem', color: 'var(--primary-green)', marginBottom: '10px', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>جدول الكورس</h2>
         <p style={{ color: '#aaa', fontSize: '1.1rem', marginBottom: '15px' }}>تفضل بمتابعة أيام الكورس ومواعيد الفقرات</p>
         <button onClick={() => setShowQr(true)} className="btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 20px', borderRadius: '20px', fontSize: '0.9rem' }}>
           <QrCode size={16} /> شارك الكورس مع صديق
@@ -243,6 +243,7 @@ const Home = () => {
       <div style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', gap: '15px', zIndex: 100 }}>
         <button 
           onClick={() => setIsFeedbackModalOpen(true)}
+          className="hide-text-mobile"
           style={{
             backgroundColor: 'var(--accent-gold)',
             color: 'var(--dark-green)',
@@ -259,11 +260,12 @@ const Home = () => {
           }}
         >
           <Star size={20} fill="var(--dark-green)" />
-          تقييم اليوم
+          <span>تقييم اليوم</span>
         </button>
 
         <button 
           onClick={() => setIsModalOpen(true)}
+          className="hide-text-mobile"
           style={{
             backgroundColor: 'var(--dark-green)',
             color: 'var(--accent-gold)',
@@ -280,7 +282,7 @@ const Home = () => {
           }}
         >
           <MessageCircle size={20} />
-          إسأل براحتك
+          <span>إسأل براحتك</span>
         </button>
       </div>
 
@@ -292,7 +294,7 @@ const Home = () => {
           display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
           backdropFilter: 'blur(5px)'
         }}>
-          <div className="glass-panel" style={{
+          <div className="glass-panel modal-panel" style={{
             padding: '30px', borderRadius: '20px', width: '100%', maxWidth: '400px',
             border: '1px solid var(--primary-green)',
             boxShadow: '0 0 30px rgba(0, 255, 136, 0.2)'
@@ -340,7 +342,7 @@ const Home = () => {
           display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
           backdropFilter: 'blur(5px)'
         }}>
-          <div className="glass-panel" style={{
+          <div className="glass-panel modal-panel" style={{
             padding: '30px', borderRadius: '20px', width: '100%', maxWidth: '500px',
             border: '1px solid var(--accent-gold)',
             boxShadow: '0 0 30px rgba(255, 207, 51, 0.2)'
@@ -373,7 +375,7 @@ const Home = () => {
           display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
           backdropFilter: 'blur(5px)'
         }}>
-          <div className="glass-panel animate-fade-in" style={{
+          <div className="glass-panel modal-panel animate-fade-in" style={{
             padding: '30px', borderRadius: '20px', textAlign: 'center', width: '100%', maxWidth: '400px',
             border: '1px solid var(--accent-gold)', boxShadow: '0 0 30px rgba(255, 207, 51, 0.2)'
           }}>
@@ -398,7 +400,7 @@ const Home = () => {
           display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
           backdropFilter: 'blur(5px)'
         }}>
-          <div className="glass-panel animate-fade-in" style={{
+          <div className="glass-panel modal-panel animate-fade-in" style={{
             padding: '30px', borderRadius: '20px', width: '100%', maxWidth: '400px',
             border: '1px solid var(--accent-gold)',
             boxShadow: '0 0 30px rgba(255, 207, 51, 0.2)',

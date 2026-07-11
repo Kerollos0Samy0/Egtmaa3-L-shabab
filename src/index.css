@@ -88,3 +88,34 @@ body {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 8px 25px rgba(255, 207, 51, 0.6);
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .glass-panel {
+    padding: 15px !important;
+  }
+  
+  .hide-text-mobile span {
+    display: none;
+  }
+  
+  .flex-col-mobile {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  .btn-primary, .btn-gold {
+    padding: 10px 15px;
+    font-size: 1rem !important;
+    width: 100% !important;
+  }
+
+  .title-mobile {
+    font-size: 1.8rem !important;
+  }
+
+  .modal-panel {
+    padding: 20px !important;
+    width: 95% !important;
+  }
+}
