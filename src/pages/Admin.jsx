@@ -5,6 +5,88 @@ import { database } from '../firebase';
 import { ref, onValue, update, remove, set, push } from "firebase/database";
 import { BarChart2, Plus, Trash2, StopCircle, QrCode, Home as HomeIcon } from 'lucide-react';
 
+const pollBankData = [
+  {
+    day: "اليوم الأول: آبا أنا عايز أتجوز",
+    sessions: [
+      {
+        title: "دوافع الارتباط",
+        questions: [
+          "الارتباط عشان أهرب من ضغوط البيت أو الوحدة هو دافع صحي جداً للزواج.",
+          "مجرد إن سني كبر وكل أصحابي اتجوزوا ده سبب كافي يخليني أقرر أرتبط.",
+          "الزواج المسيحي الناجح بيبدأ من رغبتي إني أسعد الطرف التاني مش بس إني أدور على سعادتي."
+        ]
+      },
+      {
+        title: "أعرف نفسي",
+        questions: [
+          "لو أنا مش مرتاح مع نفسي ومش فاهم عيوبي ونقاط ضعفي، مستحيل أرتاح مع شخص تاني.",
+          "الإنسان بيتغير تلقائياً بعد الجواز، فمش مهم أصلح عيوبي دلوقتي."
+        ]
+      }
+    ]
+  },
+  {
+    day: "اليوم الثاني: مش عايز تتعرف عليا خالص؟",
+    sessions: [
+      {
+        title: "لغات الحب الخمسة",
+        questions: [
+          "كل الناس بتحس بالحب بنفس الطريقة، المهم إني أكون بحبهم بصدق من قلبي.",
+          "لو خطيبي/خطيبتي لغة حبهم الهدايا، ده معناه إنهم شخصيات مادية وبيحبوا الفلوس.",
+          "من الذكاء العاطفي إني أتعلم أعبر عن حبي بالطريقة اللي الطرف التاني بيفهمها."
+        ]
+      },
+      {
+        title: "Green/Red Flags",
+        questions: [
+          "العصبية المفرطة والتطاول في فترة الخطوبة ممكن تعدي بعد الجواز لما نرتاح ونستقر.",
+          "الشخص اللي بيعترف بغلطه ويعتذر بدون مكابرة دي علامة خضراء مهمة جداً.",
+          "الغيرة الزيادة والتحكم في كل تفاصيل حياتي هي دليل قوي جداً على الحب الخالص."
+        ]
+      }
+    ]
+  },
+  {
+    day: "اليوم الثالث: أنا بزعل ع الشباب",
+    sessions: [
+      {
+        title: "ضوابط الارتباط",
+        questions: [
+          "فترة الخطوبة معمولة في الأساس عشان نجهز الشقة والفرح ونعزم الناس.",
+          "الصراحة والوضوح في فترة الخطوبة أهم بكتير من إني أمثل إني شخص مثالي وبلا عيوب."
+        ]
+      },
+      {
+        title: "الحدود",
+        questions: [
+          "بما إننا مخطوبين وبنحب بعض، يبقى مفيش أي داعي لوجود مسافات أو حدود شخصية بينا.",
+          "الحدود الواضحة بتحمي العلاقة وبتخلي فيها احترام متبادل، مش بتبعد المسافات."
+        ]
+      }
+    ]
+  },
+  {
+    day: "اليوم الرابع: ليه إديتني كل حاجة و فجأة خدت مني كل حاجة",
+    sessions: [
+      {
+        title: "كيف أميز صوت الله؟",
+        questions: [
+          "صوت ربنا دايماً بييجي عكس رغباتي وأحلامي الشخصية عشان يعلمني التخلي.",
+          "السلام الداخلي بعد الصلاة والتفكير هو من أهم وأقوى علامات صوت ربنا في حياتنا."
+        ]
+      },
+      {
+        title: "متى يكون الانفصال حكمة؟",
+        questions: [
+          "الانفصال في فترة الخطوبة هو فشل كبير ونقطة سودة في حياة الشاب أو البنت.",
+          "لو اكتشفنا إننا مش متوافقين في الأساسيات وتفكيرنا مختلف تماماً، الانفصال بيكون أكرم وأصح قرار."
+        ]
+      }
+    ]
+  }
+];
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
@@ -12,11 +94,7 @@ const Admin = () => {
   const [questions, setQuestions] = useState([]);
   const [pollHistory, setPollHistory] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
-  const [pollBank, setPollBank] = useState([
-    "الارتباط عن طريق الصالونات ناجح؟",
-    "الشكل الخارجي أهم من الطبع في البداية؟",
-    "الحدود ضرورية حتى في الخطوبة المتقدمة؟"
-  ]);
+  const [customPolls, setCustomPolls] = useState([]);
   const [newPollQuestion, setNewPollQuestion] = useState('');
   const [livePoll, setLivePoll] = useState({ isActive: false, questionText: '', trueCount: 0, falseCount: 0 });
   const [showQr, setShowQr] = useState(false);
@@ -116,7 +194,7 @@ const Admin = () => {
 
   const addToPollBank = () => {
     if (newPollQuestion.trim() !== '') {
-      setPollBank([newPollQuestion, ...pollBank]);
+      setCustomPolls([newPollQuestion, ...customPolls]);
       setNewPollQuestion('');
     }
   };
@@ -200,13 +278,41 @@ const Admin = () => {
               />
               <button onClick={addToPollBank} className="btn-gold" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Plus size={20} /> إضافة</button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {pollBank.map((q, i) => (
-                <div key={i} className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <p style={{ color: 'white', fontSize: '1.1rem' }}>{q}</p>
-                  <button onClick={() => activatePoll(q)} className="btn-primary" style={{ padding: '8px 15px', fontSize: '0.9rem' }}>تفعيل الآن</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
+              {pollBankData.map((dayObj, dayIdx) => (
+                <div key={dayIdx} style={{ backgroundColor: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <h4 style={{ color: 'var(--accent-gold)', marginBottom: '15px', fontSize: '1.2rem', borderBottom: '1px solid rgba(255,207,51,0.3)', paddingBottom: '10px' }}>{dayObj.day}</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {dayObj.sessions.map((session, sessionIdx) => (
+                      <div key={sessionIdx}>
+                        <h5 style={{ color: 'var(--primary-green)', marginBottom: '10px', fontSize: '1.1rem' }}>{session.title}</h5>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '15px', borderRight: '2px solid rgba(0,255,136,0.3)' }}>
+                          {session.questions.map((q, qIdx) => (
+                            <div key={qIdx} className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                              <p style={{ color: 'white', fontSize: '1rem', flex: 1, marginLeft: '10px' }}>{q}</p>
+                              <button onClick={() => activatePoll(q)} className="btn-primary" style={{ padding: '6px 15px', fontSize: '0.9rem' }}>تفعيل</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
+
+              {customPolls.length > 0 && (
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <h4 style={{ color: 'var(--accent-gold)', marginBottom: '15px', fontSize: '1.2rem', borderBottom: '1px solid rgba(255,207,51,0.3)', paddingBottom: '10px' }}>أسئلة مضافة يدوياً</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {customPolls.map((q, i) => (
+                      <div key={i} className="flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                        <p style={{ color: 'white', fontSize: '1rem', flex: 1, marginLeft: '10px' }}>{q}</p>
+                        <button onClick={() => activatePoll(q)} className="btn-primary" style={{ padding: '6px 15px', fontSize: '0.9rem' }}>تفعيل</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
