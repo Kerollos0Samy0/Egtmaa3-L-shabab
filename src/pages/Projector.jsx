@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { database } from '../firebase';
-import { ref, onValue } from "firebase/database";
-import { BarChart2, QrCode, MessageCircle } from 'lucide-react';
+import { ref, onValue, remove } from "firebase/database";
+import { BarChart2, QrCode, MessageCircle, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Projector = () => {
@@ -40,13 +40,18 @@ const Projector = () => {
     };
   }, []);
 
+  const markAsAnswered = (id) => {
+    const questionRef = ref(database, `questions/${id}`);
+    remove(questionRef);
+  };
+
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
       backgroundColor: 'var(--bg-dark)', zIndex: 9999,
       display: 'flex', flexDirection: 'column',
       padding: '40px',
-      overflow: 'hidden'
+      overflowY: 'auto'
     }}>
       {livePoll.isActive ? (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -98,7 +103,7 @@ const Projector = () => {
               <MessageCircle size={40} color="var(--primary-green)" /> الأسئلة المباشرة
             </h2>
             
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', paddingRight: '10px' }}>
               {questions.length === 0 ? (
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <p style={{ color: '#666', fontSize: '2rem', textAlign: 'center' }}>في انتظار أسئلتكم...</p>
@@ -117,10 +122,21 @@ const Projector = () => {
                         padding: '25px 30px', 
                         borderRadius: '20px', 
                         borderRight: '5px solid var(--primary-green)',
-                        backgroundColor: 'rgba(255,255,255,0.05)'
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '20px'
                       }}
                     >
-                      <p style={{ fontSize: '1.8rem', color: 'white', lineHeight: '1.5', fontWeight: 'bold' }}>{q.text}</p>
+                      <p style={{ fontSize: '1.8rem', color: 'white', lineHeight: '1.5', fontWeight: 'bold', flex: 1 }}>{q.text}</p>
+                      <button 
+                        onClick={() => markAsAnswered(q.id)} 
+                        className="btn-primary" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '1.2rem', flexShrink: 0 }}
+                      >
+                        <Trash2 size={24} /> تم الرد (حذف)
+                      </button>
                     </motion.div>
                   ))}
                 </AnimatePresence>
