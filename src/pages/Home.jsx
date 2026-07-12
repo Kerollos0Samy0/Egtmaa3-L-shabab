@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { courseData } from '../data/courseData';
-import { Calendar, Clock, BookOpen, MessageCircle, Lock, BarChart2, QrCode, Star } from 'lucide-react';
+import { Calendar, Clock, BookOpen, MessageCircle, Lock, BarChart2, QrCode, Star, Download } from 'lucide-react';
 import { database } from '../firebase';
 import { ref, push, set, onValue, runTransaction } from "firebase/database";
 
@@ -90,6 +90,20 @@ const Home = () => {
     localStorage.setItem(`note_${currentNoteSession.dayId}_${currentNoteSession.sessionTitle}`, noteText);
     setIsNotesOpen(false);
     alert('تم حفظ ملاحظاتك بنجاح على جهازك!');
+  };
+
+  const downloadNotes = () => {
+    if (!noteText.trim()) {
+      alert('لا توجد ملاحظات لتحميلها.');
+      return;
+    }
+    const element = document.createElement('a');
+    const file = new Blob([noteText], {type: 'text/plain;charset=utf-8'});
+    element.href = URL.createObjectURL(file);
+    element.download = `ملاحظات_${currentNoteSession.sessionTitle.replace(/ /g, '_')}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
   };
 
   const handleSendFeedback = () => {
@@ -359,9 +373,14 @@ const Home = () => {
                 backgroundColor: 'rgba(0,0,0,0.5)', color: 'white', lineHeight: '1.6'
               }}
             />
-            <div style={{ display: 'flex', gap: '15px' }}>
-              <button className="btn-gold" style={{ flex: 1 }} onClick={saveNotes}>حفظ الملاحظات</button>
-              <button className="btn-primary" style={{ flex: 1, background: 'transparent', border: '1px solid var(--primary-green)', color: 'var(--primary-green)' }} onClick={() => setIsNotesOpen(false)}>إغلاق</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <button className="btn-gold" style={{ flex: 1 }} onClick={saveNotes}>حفظ الملاحظات</button>
+                <button className="btn-primary" style={{ flex: 1, background: 'transparent', border: '1px solid var(--primary-green)', color: 'var(--primary-green)' }} onClick={() => setIsNotesOpen(false)}>إغلاق</button>
+              </div>
+              <button className="btn-primary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', background: 'var(--glass-bg)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', boxShadow: 'none' }} onClick={downloadNotes}>
+                <Download size={18} /> تحميل الملاحظات في ملف نصي
+              </button>
             </div>
           </div>
         </div>
