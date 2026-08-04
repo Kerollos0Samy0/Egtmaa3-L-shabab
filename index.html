@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>العرض التقديمي للهوية البصرية - كنيسة السيدة العذراء مريم بالقناطر</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
+        
+        :root {
+            --primary: #0A192F; /* Premium Deep Navy */
+            --accent: #D4AF37;  /* Royal Gold */
+            --bg-color: #F8F9FA;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), #112240, #0A192F);
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            border-bottom: 5px solid var(--accent);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            font-weight: 800;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+
+        .hero-logo {
+            width: 300px;
+            height: 300px;
+            margin: 40px auto 0;
+            background: white;
+            border-radius: 50%;
+            padding: 0;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            transition: transform 0.3s;
+            cursor: zoom-in;
+        }
+        
+        .hero-logo:hover {
+            transform: scale(1.05);
+        }
+
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        /* Section Titles */
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 50px;
+            position: relative;
+            font-weight: 800;
+        }
+        
+        .section-title::after {
+            content: '';
+            width: 80px;
+            height: 4px;
+            background: var(--accent);
+            display: block;
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+
+        /* Brief Grid */
+        .brief-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .brief-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--accent);
+        }
+
+        .brief-card h3 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-top: 0;
+        }
+
+        .brief-card p {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        /* Colors Section */
+        .colors-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .color-box {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+
+        .color-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 3px solid #eee;
+        }
+
+        .color-box h4 {
+            margin: 0 0 5px;
+            color: var(--primary);
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        
+        .color-hex {
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .color-desc {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* Mockups Grid */
+        .mockups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .mockup-item {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: zoom-in;
+            border: 1px solid #eee;
+        }
+        
+        .mockup-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(10, 25, 47, 0.15);
+            border-color: var(--accent);
+        }
+
+        .mockup-title {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .mockup-image {
+            width: 100%;
+            height: 280px; /* Fixed height for uniformity */
+            display: block;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        /* Lightbox Modal */
+        #lightbox {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 25, 47, 0.95);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        #lightbox.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        #lightbox-img {
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            object-fit: contain;
+        }
+
+        #lightbox.show #lightbox-img {
+            transform: scale(1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-btn:hover {
+            color: var(--accent);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Hero -->
+    <div class="hero">
+        <h1>كنيسة السيدة العذراء مريم</h1>
+        <p>القناطر الخيرية - العرض التقديمي للهوية البصرية</p>
+        <img src="Final-logo.svg" alt="Logo" class="hero-logo" onerror="this.src='logo_icon.jpg'" onclick="openLightbox('Final-logo.svg')">
+    </div>
+
+    <div class="container">
+        
+        <!-- Brief Section -->
+        <h2 class="section-title">فلسفة الشعار (البريف)</h2>
+        <div class="brief-grid">
+            <div class="brief-card">
+                <h3>التكوين الدائري (الختم)</h3>
+                <p>تم اختيار الشكل الدائري المغلق ليمثل الخلود والكمال الروحي. يجمع التصميم بين الرموز الروحية والجغرافية في وحدة بصرية متماسكة، مما يجعله مثالياً للاستخدام الرسمي كختم كنسي لا يفقد ملامحه عند التصغير.</p>
+            </div>
+            <div class="brief-card">
+                <h3>الرموز والدلالات</h3>
+                <p>يتوسط الشعار <strong>الصليب القبطي</strong> رمز الفداء، تليه <strong>أيقونة العذراء مريم</strong> بالهالة المضيئة كشفيعة وملكة. وتستند هذه الرموز على <strong>أقواس مائية</strong> تمثل قناطر النيل العريقة، لتثبيت الهوية المكانية.</p>
+            </div>
+            <div class="brief-card">
+                <h3>اللغة والخطوط</h3>
+                <p>تم إعطاء الوزن البصري الأكبر والمساحة العلوية للغة القبطية تأكيداً على الأصالة والهوية الأرثوذكسية، بينما يستقر النص العربي في القاعدة لتكوين قاعدة صلبة ومقروءة للعامة بخطوط رصينة (كايرو/أميري).</p>
+            </div>
+        </div>
+
+        <!-- Colors Section -->
+        <h2 class="section-title">الألوان الرسمية (Brand Colors)</h2>
+        <div class="colors-container">
+            <div class="color-box">
+                <div class="color-circle" style="background: #0A192F;"></div>
+                <h4>الأزرق الكحلي العميق</h4>
+                <div class="color-hex">#0A192F</div>
+                <p class="color-desc"><strong>لماذا هذا اللون؟</strong><br>تم اختيار هذه الدرجة الملكية العميقة لأنها ترمز إلى سماء الليل والوقار الروحي. يعكس هذا اللون الهيبة والرسمية، ويشكل قاعدة بصرية صلبة تبرز جمال اللون الذهبي وتجعل الشعار مقروءاً بامتياز من أي مسافة وبمختلف الأحجام.</p>
+            </div>
+            <div class="color-box">
+                <div class="color-circle" style="background: #D4AF37;"></div>
+                <h4>الذهبي الملوكي</h4>
+                <div class="color-hex">#D4AF37</div>
+                <p class="color-desc"><strong>لماذا هذا اللون؟</strong><br>يرمز اللون الذهبي الكلاسيكي إلى النور الإلهي والمجد، ويتناغم تماماً مع مكانة السيدة العذراء كملكة متوجة. يضيف هذا اللون لمسة من الفخامة، الأصالة، والدفء المطلوب في الهويات الكنسية ليعطي تبايناً ساحراً مع الكحلي.</p>
+            </div>
+        </div>
+
+        <!-- Mockups Section -->
+        <h2 class="section-title">التطبيقات البصرية (Mockups)</h2>
+        <div class="mockups-grid">
+            
+            <div class="mockup-item" onclick="openLightbox('New/الختم.jpeg')">
+                <div class="mockup-title">الختم الكنسي</div>
+                <img src="New/الختم.jpeg" class="mockup-image" alt="الختم">
+            </div>
+
+            <div class="mockup-item" onclick="openLightbox('New/الحفر.jpeg')">
+                <div class="mockup-title">الحفر (Engraving)</div>
+                <img src="New/الحفر.jpeg" class="mockup-image" alt="الحفر">
+            </div>
+
+            <div class="mockup-item" onclick="openLightbox('New/التطريز.jpeg')">
+                <div class="mockup-title">التطريز (Embroidery)</div>
+                <img src="New/التطريز.jpeg" class="mockup-image" alt="التطريز">
+            </div>
+
+            <div class="mockup-item" onclick="openLightbox('New/اظرف.jpeg')">
+                <div class="mockup-title">الأظرف الكنسية</div>
+                <img src="New/اظرف.jpeg" class="mockup-image" alt="الأظرف">
+            </div>
+
+            <div class="mockup-item" onclick="openLightbox('اوراق%20رسمية.png')">
+                <div class="mockup-title">الأوراق الرسمية (Letterhead)</div>
+                <img src="اوراق%20رسمية.png" class="mockup-image" alt="الأوراق الرسمية">
+            </div>
+
+            <div class="mockup-item" onclick="openLightbox('New/rool-up.png')">
+                <div class="mockup-title">البانر (Roll-up Banner)</div>
+                <img src="New/rool-up.png" class="mockup-image" alt="البانر">
+            </div>
+
+            <div class="mockup-item" onclick="openLightbox('New/سوشيال.png')">
+                <div class="mockup-title">السوشيال ميديا</div>
+                <img src="New/سوشيال.png" class="mockup-image" alt="السوشيال ميديا">
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="" alt="High Resolution Mockup">
+    </div>
+
+    <script>
+        function openLightbox(imageSrc) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imageSrc;
+            
+            // Show the modal
+            lightbox.style.display = 'flex';
+            
+            // Trigger animation
+            setTimeout(() => {
+                lightbox.classList.add('show');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('show');
+            
+            // Hide after animation finishes
+            setTimeout(() => {
+                lightbox.style.display = 'none';
+            }, 300);
+            
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+    </script>
+</body>
+</html>
