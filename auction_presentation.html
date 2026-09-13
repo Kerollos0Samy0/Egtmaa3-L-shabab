@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مزاد القيم والوزنات</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <!-- PeerJS for Real-time Connection without backend -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    /* Toast Notification */
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background-color: #10b981;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-weight: bold;
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+  </style>
+</head>
+<body id="app-body" class="bg-slate-50 text-slate-900 antialiased min-h-screen w-full flex flex-col lg:flex-row relative">
+  
+  <!-- Host UI (Will be cleared if opened as a client) -->
+  <div id="host-ui" class="w-full flex flex-col lg:flex-row min-h-screen">
+      
+      <!-- Persistent QR Code -->
+      <div class="fixed top-2 right-2 md:top-6 md:right-6 flex flex-col items-center bg-white p-2 rounded-xl shadow-xl border border-slate-200 z-50">
+        <p class="text-[10px] md:text-xs font-bold text-slate-700 mb-1">قدم سعرك من الموبايل</p>
+        <img id="qr-image" src="" alt="جاري التحميل..." class="w-16 h-16 md:w-24 md:h-24 bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+        <p id="qr-status" class="text-[10px] text-orange-500 font-bold mt-1 text-center hidden">ارفع الملف على الإنترنت ليعمل</p>
+      </div>
+
+      <div id="toast-container"></div>
+
+      <!-- Right Side (Main Auction Area) -->
+      <div class="w-full lg:w-2/3 xl:w-3/4 min-h-[60vh] lg:h-screen relative flex items-center justify-center p-4 md:p-8 bg-slate-100 lg:overflow-y-auto" id="auction-container">
+        <!-- Content injected via JS -->
+      </div>
+
+      <!-- Left Side (Leaderboards) -->
+      <div class="w-full lg:w-1/3 xl:w-1/4 min-h-[40vh] lg:h-screen border-t lg:border-t-0 lg:border-r border-slate-300 flex flex-col bg-white shadow-2xl z-10 pb-8 lg:pb-0">
+        
+        <div class="min-h-[250px] lg:h-1/2 p-4 lg:p-5 flex flex-col border-b border-slate-300 bg-emerald-50">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg md:text-xl font-extrabold text-emerald-800 flex items-center gap-2">
+              🏆 الأقيم (ترتيب القيمة)
+            </h3>
+          </div>
+          <div id="value-leaderboard" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+        </div>
+
+        <div class="min-h-[250px] lg:h-1/2 p-4 lg:p-5 flex flex-col bg-blue-50">
+          <h3 class="text-lg md:text-xl font-extrabold text-blue-800 flex items-center gap-2 mb-4">
+            💰 الرصيد المتبقي
+          </h3>
+          <div id="budget-leaderboard" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+          
+          <div class="mt-4 text-center flex flex-col gap-2">
+            <button onclick="editTeamNames()" class="text-sm md:text-xs text-slate-500 hover:text-blue-600 underline transition-colors p-2">
+              ✏️ تعديل أسماء الفرق
+            </button>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <script>
+    // --- Data Models ---
+    let teams = [
+      { id: 1, name: 'فريق 1', budget: 1000, valueScore: 0 },
+      { id: 2, name: 'فريق 2', budget: 1000, valueScore: 0 },
+      { id: 3, name: 'فريق 3', budget: 1000, valueScore: 0 },
+      { id: 4, name: 'فريق 4', budget: 1000, valueScore: 0 }
+    ];
+
+    let cards = [
+      { type: 'trap', valueScore: 100, frontIcon: '📈🚀', frontTitle: 'النجاح السريع', frontDesc: 'ثروة مفاجئة ونجاح صاروخي بدون تدرج.', frontFeatures: ['أرباح خيالية في أقل من شهر', 'نظرة انبهار من كل الناس'], backIcon: '🚨📉', backTitle: 'مفاجأة: الفخ!', backDesc: 'افتقار للخبرة الحياتية', backDetails: 'خسرت كل شيء سريعاً لأنك لم تبدأ من الصفر.' },
+      { type: 'trap', valueScore: 100, frontIcon: '📱🤩', frontTitle: 'تريند السوشيال ميديا', frontDesc: 'ملايين المتابعين وشهرة واسعة جداً.', frontFeatures: ['عقود إعلانات خيالية', 'الكل بيتصور معاك'], backIcon: '🚨👁️‍🗨️', backTitle: 'مفاجأة: الفخ!', backDesc: 'قيمتك أصبحت مرهونة باللايكات', backDetails: 'حملة هجوم قاسية دمرت نفسيتك وفقدت هويتك.' },
+      { type: 'trap', valueScore: 100, frontIcon: '💍💑', frontTitle: 'الارتباط المثالي', frontDesc: 'شريك حياة شكله مبهر وغني جداً.', frontFeatures: ['حياة مليئة بالهدايا', 'مظهر اجتماعي رائع'], backIcon: '🚨⛓️', backTitle: 'مفاجأة: الفخ!', backDesc: 'شريك سام (Toxic)', backDetails: 'يقلل من قيمتك دائماً وتعيش في وحدة قاتلة.' },
+      { type: 'trap', valueScore: 100, frontIcon: '🎭🤝', frontTitle: 'القبول الاجتماعي', frontDesc: 'محبوب من الجميع بلا استثناء.', frontFeatures: ['علاقات واسعة', 'لا توجد صراعات'], backIcon: '🚨👻', backTitle: 'مفاجأة: الفخ!', backDesc: 'فقدت هويتك لإرضاء الجميع', backDetails: 'تلونت حتى نسيت من أنت حقيقة.' },
+      { type: 'trap', valueScore: 100, frontIcon: '🕊️🌍', frontTitle: 'الحرية المطلقة', frontDesc: 'استقلال تام بدون أي قيود.', frontFeatures: ['تفعل ما تشاء', 'حياة مليئة بالمغامرات'], backIcon: '🚨🏝️', backTitle: 'مفاجأة: الفخ!', backDesc: 'عزلة تامة وافتقاد للسند', backDetails: 'في أول أزمة لم تجد من يقف بجانبك.' },
+      { type: 'trap', valueScore: 100, frontIcon: '👔👑', frontTitle: 'منصب قيادي بالواسطة', frontDesc: 'مدير في سن الـ 23.', frontFeatures: ['سلطة ومكتب فخم', 'راتب ضخم'], backIcon: '🚨🥵', backTitle: 'مفاجأة: الفخ!', backDesc: 'متلازمة المحتال وضغط مدمر', backDetails: 'تعيش في رعب من أن ينكشف افتقارك للخبرة.' },
+      { type: 'trap', valueScore: 100, frontIcon: '✈️🧳', frontTitle: 'الهجرة غير المخططة', frontDesc: 'سفر فوري للهروب من واقعك.', frontFeatures: ['تذكرة ذهاب فقط', 'حياة جديدة'], backIcon: '🚨🚧', backTitle: 'مفاجأة: الفخ!', backDesc: 'هروب بلا هدف', backDetails: 'عمل شاق لا يناسب طموحك وإحساس بالضياع.' },
+      { type: 'trap', valueScore: 100, frontIcon: '🗣️🔥', frontTitle: 'التمرد الدائم', frontDesc: 'الاعتراض الدائم على كل شيء.', frontFeatures: ['تبدو شخصاً عميقاً', 'تلفت الانتباه'], backIcon: '🚨☣️', backTitle: 'مفاجأة: الفخ!', backDesc: 'شخصية سامة', backDetails: 'خسرت كل من يحبونك بسبب نقدك اللاذع.' },
+      
+      { type: 'treasure', valueScore: 500, frontIcon: '📉🤦', frontTitle: 'فشل في مشروعك الأول', frontDesc: 'خسرت كل مدخراتك.', frontFeatures: ['إحباط مؤقت', 'نظرة شفقة من الناس'], backIcon: '💎🏆', backTitle: 'الكنز المخفي!', backDesc: 'الدرس العملي', backDetails: 'هذه الخبرة جعلتك تبني مشروعاً أسطورياً بعدها.' },
+      { type: 'treasure', valueScore: 500, frontIcon: '🗣️😠', frontTitle: 'صديق مستفز يواجهك', frontDesc: 'صديق ينتقدك دائماً.', frontFeatures: ['مجادلات مستمرة', 'لا يجاملك'], backIcon: '💎🛡️', backTitle: 'الكنز المخفي!', backDesc: 'حائط صد ضد التوهان', backDetails: 'وقف في ظهرك وقت الأزمات عندما هرب الآخرون.' },
+      { type: 'treasure', valueScore: 500, frontIcon: '⏳🥱', frontTitle: 'سنة من الملل والروتين', frontDesc: 'دراسة وعمل في صمت.', frontFeatures: ['حياة كئيبة للآخرين', 'انعزال للتركيز'], backIcon: '💎🔑', backTitle: 'الكنز المخفي!', backDesc: 'اكتشاف الموهبة', backDetails: 'أتقنت مهارة نادرة جعلتك مطلوباً في كل مكان.' },
+      { type: 'treasure', valueScore: 500, frontIcon: '🚫🏢', frontTitle: 'الرفض في الانترفيو', frontDesc: 'تلقيت إيميل رفض.', frontFeatures: ['إحباط ورفض', 'تأخر مؤقت'], backIcon: '💎🚪', backTitle: 'الكنز المخفي!', backDesc: 'عناية إلهية', backDetails: 'حماك من بيئة سامة ودفعك لاكتشاف شغفك.' },
+      { type: 'treasure', valueScore: 500, frontIcon: '📖🤨', frontTitle: 'مرشد روحي صارم', frontDesc: 'يحاسبك ويضغط عليك.', frontFeatures: ['تكليفات روحية مستمرة', 'تقييد لبعض الحريات'], backIcon: '💎🧭', backTitle: 'الكنز المخفي!', backDesc: 'البوصلة', backDetails: 'يحميك من التفكير المفرط ويعيد لك سلامك الداخلي.' },
+      { type: 'treasure', valueScore: 500, frontIcon: '🚲💸', frontTitle: 'حياة الاستغناء', frontDesc: 'لا تركض وراء الماركات.', frontFeatures: ['مظهر بسيط', 'الناس تظنك فقيراً'], backIcon: '💎🧘', backTitle: 'الكنز المخفي!', backDesc: 'صفر ديون = حرية مطلقة', backDetails: 'تملك راحة البال ولا تخضع لضغوط الماديات.' },
+      { type: 'treasure', valueScore: 500, frontIcon: '🙇‍♂️💔', frontTitle: 'الاعتراف بخطأ كارثي', frontDesc: 'الاعتذار أمام الجميع.', frontFeatures: ['إحراج شديد', 'كسر الكبرياء'], backIcon: '💎🕊️', backTitle: 'الكنز المخفي!', backDesc: 'التحرر والمرونة', backDetails: 'كسبت احترام العقلاء وتخلصت من عقدة الذنب.' },
+      { type: 'treasure', valueScore: 500, frontIcon: '🔄🏗️', frontTitle: 'البداية من الصفر', frontDesc: 'تترك مجالاً ضيعت فيه 4 سنوات.', frontFeatures: ['الناس سيقولون مجنون', 'تأخرت عن دفعتك'], backIcon: '💎🔥', backTitle: 'الكنز المخفي!', backDesc: 'اكتشاف الشغف', backDetails: 'تعمل بشغف بدلاً من أن تعيش كعجوز في مكان لا يشبهك.' }
+    ];
+
+    let currentStep = 'welcome';
+    let currentCardIndex = 0;
+    let winningTeamId = null;
+    let winningBid = 0;
+
+    // --- PeerJS Logic (WebRTC) ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinId = urlParams.get('join');
+    let peer;
+    let hostConnections = [];
+
+    if (joinId) {
+      // 📱 CLIENT MODE (MOBILE)
+      document.getElementById('host-ui').style.display = 'none';
+      initClient(joinId);
+    } else {
+      // 💻 HOST MODE (PRESENTER)
+      initHost();
+    }
+
+    function initHost() {
+      // Initialize PeerJS for Host
+      peer = new Peer();
+      
+      peer.on('open', (id) => {
+        // Generate connection link
+        let baseUrl = window.location.href.split('?')[0];
+        if(baseUrl.startsWith('file://')) {
+          document.getElementById('qr-status').classList.remove('hidden');
+          // Fallback URL so QR doesn't break, though it won't work perfectly locally
+          baseUrl = "https://tiiny.host/your-link-here"; 
+        }
+        const clientUrl = `${baseUrl}?join=${id}`;
+        
+        // Update QR Code
+        const qrImage = document.getElementById('qr-image');
+        qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(clientUrl)}`;
+      });
+
+      peer.on('connection', (conn) => {
+        hostConnections.push(conn);
+        
+        conn.on('open', () => {
+          // Send current teams to mobile client so dropdown is up-to-date
+          conn.send({ type: 'SYNC_TEAMS', teams: teams });
+        });
+
+        conn.on('data', (data) => {
+          if (data.type === 'BID') {
+            const inputField = document.getElementById(`bid_team_${data.teamId}`);
+            if (inputField) {
+              inputField.value = data.bid;
+              
+              // Show Toast Notification
+              const teamName = teams.find(t => t.id == data.teamId)?.name || 'فريق';
+              showToast(`تم استلام مزايدة من: ${teamName} ✅`);
+            }
+          }
+        });
+      });
+
+      // Render Initial UI
+      renderSidebars();
+      renderAuction();
+    }
+
+    function initClient(hostId) {
+      // Create Mobile UI
+      const body = document.getElementById('app-body');
+      body.className = "bg-slate-100 text-slate-900 flex flex-col items-center min-h-screen p-6";
+      body.innerHTML = `
+        <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-slate-200">
+           <h1 class="text-3xl font-extrabold text-blue-700 mb-2">مزايدة سرية 🔒</h1>
+           <p class="text-slate-500 mb-8">سيتم إرسال سعرك مباشرة إلى شاشة العرض</p>
+           
+           <div class="text-right mb-6">
+             <label class="block font-bold text-slate-700 mb-2 text-lg">اختر فريقك:</label>
+             <select id="mobileTeam" class="w-full p-4 text-xl border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 bg-slate-50">
+               <option value="1">فريق 1</option>
+               <option value="2">فريق 2</option>
+               <option value="3">فريق 3</option>
+               <option value="4">فريق 4</option>
+             </select>
+           </div>
+           
+           <div class="text-right mb-8">
+             <label class="block font-bold text-slate-700 mb-2 text-lg">سعر المزايدة:</label>
+             <input type="number" id="mobileBid" class="w-full p-4 text-xl border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 bg-slate-50" placeholder="أدخل الرقم هنا...">
+           </div>
+           
+           <button id="sendBtn" onclick="sendMobileBid()" class="w-full py-4 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-2xl font-bold rounded-xl shadow-lg transition-all opacity-50 cursor-not-allowed" disabled>
+             جاري الاتصال بالشاشة... ⏳
+           </button>
+           
+           <div id="client-msg" class="mt-4 font-bold text-emerald-600 hidden"></div>
+        </div>
+      `;
+
+      peer = new Peer();
+      let conn;
+      
+      peer.on('open', () => {
+        conn = peer.connect(hostId);
+        
+        conn.on('open', () => {
+          const btn = document.getElementById('sendBtn');
+          btn.innerText = "إرسال المزايدة 🚀";
+          btn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-amber-500', 'hover:bg-amber-600');
+          btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+          btn.disabled = false;
+        });
+
+        conn.on('data', (data) => {
+          if (data.type === 'SYNC_TEAMS') {
+            const select = document.getElementById('mobileTeam');
+            select.innerHTML = data.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+          }
+        });
+      });
+
+      peer.on('error', (err) => {
+        document.getElementById('sendBtn').innerText = "فشل الاتصال بالشاشة ❌";
+        document.getElementById('client-msg').innerText = "تأكد أن شاشة العرض مفتوحة ومتصلة بالإنترنت.";
+        document.getElementById('client-msg').classList.remove('hidden');
+        document.getElementById('client-msg').classList.add('text-red-500');
+      });
+
+      // Expose send function to client window
+      window.sendMobileBid = function() {
+        if (!conn || !conn.open) return;
+        const tId = document.getElementById('mobileTeam').value;
+        const bid = document.getElementById('mobileBid').value;
+        
+        if (bid === '') {
+          alert('يرجى كتابة السعر أولاً!');
+          return;
+        }
+
+        conn.send({ type: 'BID', teamId: parseInt(tId), bid: parseInt(bid) });
+        
+        // Show success animation
+        const msg = document.getElementById('client-msg');
+        msg.innerText = "تم الإرسال بنجاح! ركز مع شاشة العرض 👀";
+        msg.classList.remove('hidden', 'text-red-500');
+        
+        // Reset input
+        document.getElementById('mobileBid').value = '';
+      }
+    }
+
+    // --- Host Functions ---
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerText = message;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function editTeamNames() {
+      let changed = false;
+      teams.forEach(team => {
+        let newName = prompt(`أدخل الاسم الجديد لـ "${team.name}":`, team.name);
+        if(newName && newName.trim() !== '') {
+          team.name = newName.trim();
+          changed = true;
+        }
+      });
+      if (changed) {
+        renderSidebars();
+        if(currentStep === 'front') renderAuction();
+        // Broadcast new names to connected mobiles
+        hostConnections.forEach(conn => {
+          if(conn.open) conn.send({ type: 'SYNC_TEAMS', teams: teams });
+        });
+      }
+    }
+
+    function renderSidebars() {
+      const valContainer = document.getElementById('value-leaderboard');
+      const budContainer = document.getElementById('budget-leaderboard');
+      
+      const sortedByValue = [...teams].sort((a, b) => b.valueScore - a.valueScore);
+      const sortedByBudget = [...teams].sort((a, b) => b.budget - a.budget);
+
+      valContainer.innerHTML = sortedByValue.map((t, idx) => `
+        <div class="flex items-center justify-between bg-white p-2 md:p-3 rounded-lg border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="font-bold text-emerald-700 bg-emerald-100 w-6 h-6 flex items-center justify-center rounded-full text-sm">
+              ${idx + 1}
+            </span>
+            <span class="font-semibold text-sm md:text-base text-slate-800 truncate max-w-[120px] md:max-w-full">${t.name}</span>
+          </div>
+          <span class="font-black text-sm md:text-base text-emerald-700" dir="ltr">${t.valueScore > 0 ? '+'+t.valueScore : t.valueScore}</span>
+        </div>
+      `).join('');
+
+      budContainer.innerHTML = sortedByBudget.map((t, idx) => `
+        <div class="flex items-center justify-between bg-white p-2 md:p-3 rounded-lg border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="font-bold text-blue-700 bg-blue-100 w-6 h-6 flex items-center justify-center rounded-full text-sm">
+              ${idx + 1}
+            </span>
+            <span class="font-semibold text-sm md:text-base text-slate-800 truncate max-w-[120px] md:max-w-full">${t.name}</span>
+          </div>
+          <span class="font-black text-sm md:text-base text-blue-700" dir="ltr">${t.budget}💰</span>
+        </div>
+      `).join('');
+    }
+
+    function renderAuction() {
+      const auctionContainer = document.getElementById('auction-container');
+      auctionContainer.innerHTML = '';
+      
+      if (currentStep === 'welcome') {
+        auctionContainer.innerHTML = `
+          <div class="fade-in bg-white p-6 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
+            <div class="text-6xl md:text-8xl mb-4 md:mb-6">🎙️🔨</div>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-4 md:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-700 leading-tight">مزاد القيم والوزنات</h1>
+            <p class="text-slate-600 text-lg md:text-2xl mb-8 md:mb-12 leading-relaxed">
+              <strong>16 كارت..</strong> معروضة للبيع بشكل عشوائي.<br>
+              احذروا! بعضها فخاخ وبعضها كنوز مخفية..<br>
+              القيم والأسعار مجهولة تماماً حتى نهاية الصفقة!
+            </p>
+            <div class="flex flex-col md:flex-row gap-3 md:gap-4 justify-center items-center">
+              <button onclick="startAuction()" class="bg-blue-600 text-white px-6 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl text-xl md:text-3xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all w-full md:w-auto">
+                ابدأ المزاد 🛒
+              </button>
+            </div>
+          </div>
+        `;
+      } 
+      else if (currentStep === 'front') {
+        const card = cards[currentCardIndex];
+
+        const teamInputs = teams.map(t => `
+          <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-300 shadow-sm relative">
+            <div class="font-bold text-slate-800 text-sm md:text-lg">${t.name} (رصيد: ${t.budget})</div>
+            <input type="number" id="bid_team_${t.id}" placeholder="السعر..." class="w-1/2 px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-500 text-left bg-slate-50 transition-colors" min="0">
+          </div>
+        `).join('');
+
+        auctionContainer.innerHTML = `
+          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
+            <div class="text-5xl md:text-7xl mb-3 md:mb-4">${card.frontIcon}</div>
+            <div class="text-slate-500 font-bold text-sm md:text-lg mb-2">المعروض رقم ${currentCardIndex + 1} من ${cards.length}</div>
+            <h2 class="text-2xl md:text-4xl font-bold mb-3 md:mb-4 text-slate-900">${card.frontTitle}</h2>
+            <p class="text-slate-600 text-lg md:text-2xl mb-5 md:mb-6 leading-relaxed">${card.frontDesc}</p>
+            
+            <div class="bg-slate-50 p-4 md:p-5 rounded-2xl mb-5 md:mb-6 text-right shadow-inner border border-slate-200">
+              <h3 class="font-bold text-lg md:text-xl mb-3 border-b border-slate-300 pb-2 text-blue-800">المواصفات الظاهرية:</h3>
+              <ul class="list-disc list-inside text-base md:text-lg text-slate-700 space-y-2">
+                ${card.frontFeatures.map(f => `<li>${f}</li>`).join('')}
+              </ul>
+            </div>
+            
+            <!-- Secret Bids Input Section -->
+            <div class="bg-slate-100 p-4 md:p-5 rounded-2xl border border-slate-200 mb-5 md:mb-6 flex flex-col gap-3 text-right">
+              <h3 class="font-bold text-base md:text-lg text-slate-800 flex justify-between items-center">
+                <span>أسعار المزايدة السرية (المستلمة من الموبايلات):</span>
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="bids-grid">
+                ${teamInputs}
+              </div>
+            </div>
+
+            <button onclick="calculateWinnerAndReveal()" class="bg-amber-600 text-white px-6 md:px-8 py-4 rounded-xl text-xl md:text-2xl font-bold shadow-lg hover:bg-amber-700 active:scale-95 transition-all w-full">
+              إغلاق المزاد وإعلان الفائز 🔨
+            </button>
+          </div>
+        `;
+      } 
+      else if (currentStep === 'back') {
+        const card = cards[currentCardIndex];
+        const isTrap = card.type === 'trap';
+        
+        const colorClass = isTrap ? 'text-red-700' : 'text-emerald-700';
+        const bgClass = isTrap ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200';
+        const titleColorClass = isTrap ? 'text-red-800 border-red-300' : 'text-emerald-800 border-emerald-300';
+        const textColor = isTrap ? 'text-red-900' : 'text-emerald-900';
+        
+        const resultBannerBg = isTrap ? 'bg-red-100 text-red-800 border-red-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        const winningTeamName = teams.find(t => t.id === parseInt(winningTeamId))?.name || 'مجهول';
+
+        auctionContainer.innerHTML = `
+          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
+            <div class="${resultBannerBg} px-4 md:px-6 py-2 md:py-3 rounded-xl inline-block font-bold text-lg md:text-2xl mb-4 md:mb-6 border shadow-sm w-full md:w-auto overflow-hidden text-ellipsis whitespace-nowrap">
+              🎉 المزاد رسا على فريق (${winningTeamName}) بسعر <span class="font-black">${winningBid}</span> نقطة!
+            </div>
+
+            <div class="text-5xl md:text-7xl mb-3 md:mb-4 ${isTrap ? 'animate-pulse' : 'animate-bounce'}">${card.backIcon}</div>
+            <h2 class="text-2xl md:text-4xl font-extrabold mb-3 md:mb-4 ${colorClass}">${card.backTitle}</h2>
+            <p class="text-slate-600 text-lg md:text-2xl mb-4 md:mb-6 leading-relaxed">${card.backDesc}</p>
+            
+            <div class="${bgClass} border p-4 md:p-6 rounded-2xl mb-6 md:mb-8 text-right shadow-inner">
+              <h3 class="font-bold text-lg md:text-2xl mb-3 ${titleColorClass} border-b pb-2 flex justify-between">
+                <span>التفاصيل الحقيقية:</span>
+                <span dir="ltr" class="${isTrap ? 'text-red-700' : 'text-emerald-700'} font-black">${card.valueScore > 0 ? '+'+card.valueScore : card.valueScore} قيمة</span>
+              </h3>
+              <p class="text-base md:text-xl ${textColor} leading-relaxed font-semibold">${card.backDetails}</p>
+            </div>
+            
+            <div class="flex gap-3 md:gap-4 justify-center">
+              ${currentCardIndex < cards.length - 1 
+                ? `<button onclick="nextCard()" class="bg-blue-600 text-white px-6 md:px-8 py-4 rounded-xl text-lg md:text-2xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all w-full md:w-auto">المعروض التالي ➡️</button>`
+                : `<button onclick="resetAuction()" class="border-2 border-slate-300 text-slate-700 px-6 md:px-8 py-4 rounded-xl text-base md:text-xl font-bold hover:bg-slate-100 active:scale-95 transition-all w-full md:w-auto">إنهاء المزاد 🏁</button>`
+              }
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function calculateWinnerAndReveal() {
+      let maxBid = -1;
+      let winners = [];
+      
+      teams.forEach(t => {
+        let inputVal = document.getElementById(`bid_team_${t.id}`).value;
+        let bid = parseInt(inputVal !== '' ? inputVal : '0');
+        
+        if (bid > maxBid) {
+          maxBid = bid;
+          winners = [t.id];
+        } else if (bid === maxBid && bid > 0) {
+          winners.push(t.id);
+        }
+      });
+
+      if (maxBid === 0) {
+        alert("لم يقم أي فريق بتقديم عرض!");
+        return;
+      }
+
+      if (winners.length > 1) {
+        alert("تعادل! هناك أكثر من فريق قدم نفس السعر الأعلى (" + maxBid + "). يرجى إعادة المزايدة لحسم التعادل.");
+        return;
+      }
+
+      winningTeamId = winners[0];
+      winningBid = maxBid;
+
+      const team = teams.find(t => t.id === winningTeamId);
+      if (team.budget < winningBid) {
+        alert(`فريق (${team.name}) لا يملك رصيد كافٍ! رصيده الحالي هو ${team.budget}`);
+        return;
+      }
+
+      team.budget -= winningBid;
+      team.valueScore += cards[currentCardIndex].valueScore;
+      
+      currentStep = 'back';
+      renderSidebars();
+      renderAuction();
+    }
+
+    function startAuction() {
+      shuffleArray(cards);
+      currentStep = 'front';
+      currentCardIndex = 0;
+      teams.forEach(t => { t.budget = 1000; t.valueScore = 0; });
+      renderSidebars();
+      renderAuction();
+    }
+
+    function nextCard() {
+      currentStep = 'front';
+      currentCardIndex++;
+      renderAuction();
+    }
+
+    function resetAuction() {
+      currentStep = 'welcome';
+      currentCardIndex = 0;
+      renderAuction();
+    }
+
+  </script>
+</body>
+</html>
