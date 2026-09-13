@@ -29,14 +29,19 @@
       <div class="w-full lg:w-2/3 xl:w-3/4 min-h-[60vh] lg:h-screen relative flex items-center justify-center p-4 md:p-8 bg-slate-100 lg:overflow-y-auto" id="auction-container">
       </div>
 
-      <div class="w-full lg:w-1/3 xl:w-1/4 min-h-[40vh] lg:h-screen border-t lg:border-t-0 lg:border-r border-slate-300 flex flex-col bg-white shadow-2xl z-10 pb-8 lg:pb-0">
-        <div class="min-h-[250px] lg:h-1/2 p-4 lg:p-5 flex flex-col border-b border-slate-300 bg-emerald-50">
-          <h3 class="text-lg md:text-xl font-extrabold text-emerald-800 flex items-center gap-2 mb-4">🏆 ترتيب القيمة</h3>
-          <div id="value-leaderboard" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
-        </div>
-        <div class="min-h-[250px] lg:h-1/2 p-4 lg:p-5 flex flex-col bg-blue-50">
-          <h3 class="text-lg md:text-xl font-extrabold text-blue-800 flex items-center gap-2 mb-4">💰 الرصيد المتبقي</h3>
-          <div id="budget-leaderboard" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+      <!-- Single Leaderboard Sidebar -->
+      <div class="w-full lg:w-1/3 xl:w-1/4 h-auto lg:h-screen border-t lg:border-t-0 lg:border-r border-slate-300 flex flex-col bg-white shadow-2xl z-10 pb-8 lg:pb-0">
+        <div class="flex-1 p-4 lg:p-5 flex flex-col bg-slate-50">
+          <h3 class="text-xl md:text-2xl font-extrabold text-blue-800 flex items-center justify-center gap-2 mb-6 border-b-2 border-blue-200 pb-4">
+            🏆 لوحة النقاط
+          </h3>
+          <div id="score-leaderboard" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+          
+          <div class="mt-6 text-center flex flex-col gap-2 border-t-2 border-slate-200 pt-4">
+            <button onclick="editTeamNames()" class="text-sm md:text-base font-bold text-slate-500 hover:text-blue-600 transition-colors p-2">
+              ✏️ تعديل أسماء الفرق
+            </button>
+          </div>
         </div>
       </div>
   </div>
@@ -45,30 +50,30 @@
     let teams = []; 
     let currentBids = {}; 
     let hostConnections = {}; 
+    let lastMathResultHTML = '';
 
     let cards = [
-      { type: 'trap', valueScore: 100, frontIcon: '📈🚀', frontTitle: 'النجاح السريع', frontDesc: 'ثروة مفاجئة ونجاح صاروخي بدون تدرج.', frontFeatures: ['أرباح خيالية في أقل من شهر', 'نظرة انبهار من كل الناس'], backIcon: '🚨📉', backTitle: 'مفاجأة: الفخ!', backDesc: 'افتقار للخبرة الحياتية', backDetails: 'خسرت كل شيء سريعاً لأنك لم تبدأ من الصفر.' },
-      { type: 'trap', valueScore: 100, frontIcon: '📱🤩', frontTitle: 'تريند السوشيال ميديا', frontDesc: 'ملايين المتابعين وشهرة واسعة جداً.', frontFeatures: ['عقود إعلانات خيالية', 'الكل بيتصور معاك'], backIcon: '🚨👁️‍🗨️', backTitle: 'مفاجأة: الفخ!', backDesc: 'قيمتك أصبحت مرهونة باللايكات', backDetails: 'حملة هجوم قاسية دمرت نفسيتك وفقدت هويتك.' },
-      { type: 'trap', valueScore: 100, frontIcon: '💍💑', frontTitle: 'الارتباط المثالي', frontDesc: 'شريك حياة شكله مبهر وغني جداً.', frontFeatures: ['حياة مليئة بالهدايا', 'مظهر اجتماعي رائع'], backIcon: '🚨⛓️', backTitle: 'مفاجأة: الفخ!', backDesc: 'شريك سام (Toxic)', backDetails: 'يقلل من قيمتك دائماً وتعيش في وحدة قاتلة.' },
-      { type: 'trap', valueScore: 100, frontIcon: '🎭🤝', frontTitle: 'القبول الاجتماعي', frontDesc: 'محبوب من الجميع بلا استثناء.', frontFeatures: ['علاقات واسعة', 'لا توجد صراعات'], backIcon: '🚨👻', backTitle: 'مفاجأة: الفخ!', backDesc: 'فقدت هويتك لإرضاء الجميع', backDetails: 'تلونت حتى نسيت من أنت حقيقة.' },
-      { type: 'trap', valueScore: 100, frontIcon: '🕊️🌍', frontTitle: 'الحرية المطلقة', frontDesc: 'استقلال تام بدون أي قيود.', frontFeatures: ['تفعل ما تشاء', 'حياة مليئة بالمغامرات'], backIcon: '🚨🏝️', backTitle: 'مفاجأة: الفخ!', backDesc: 'عزلة تامة وافتقاد للسند', backDetails: 'في أول أزمة لم تجد من يقف بجانبك.' },
-      { type: 'trap', valueScore: 100, frontIcon: '👔👑', frontTitle: 'منصب قيادي بالواسطة', frontDesc: 'مدير في سن الـ 23.', frontFeatures: ['سلطة ومكتب فخم', 'راتب ضخم'], backIcon: '🚨🥵', backTitle: 'مفاجأة: الفخ!', backDesc: 'متلازمة المحتال وضغط مدمر', backDetails: 'تعيش في رعب من أن ينكشف افتقارك للخبرة.' },
-      { type: 'trap', valueScore: 100, frontIcon: '✈️🧳', frontTitle: 'الهجرة غير المخططة', frontDesc: 'سفر فوري للهروب من واقعك.', frontFeatures: ['تذكرة ذهاب فقط', 'حياة جديدة'], backIcon: '🚨🚧', backTitle: 'مفاجأة: الفخ!', backDesc: 'هروب بلا هدف', backDetails: 'عمل شاق لا يناسب طموحك وإحساس بالضياع.' },
-      { type: 'trap', valueScore: 100, frontIcon: '🗣️🔥', frontTitle: 'التمرد الدائم', frontDesc: 'الاعتراض الدائم على كل شيء.', frontFeatures: ['تبدو شخصاً عميقاً', 'تلفت الانتباه'], backIcon: '🚨☣️', backTitle: 'مفاجأة: الفخ!', backDesc: 'شخصية سامة', backDetails: 'خسرت كل من يحبونك بسبب نقدك اللاذع.' },
-      { type: 'treasure', valueScore: 500, frontIcon: '📉🤦', frontTitle: 'فشل في مشروعك الأول', frontDesc: 'خسرت كل مدخراتك.', frontFeatures: ['إحباط مؤقت', 'نظرة شفقة من الناس'], backIcon: '💎🏆', backTitle: 'الكنز المخفي!', backDesc: 'الدرس العملي', backDetails: 'هذه الخبرة جعلتك تبني مشروعاً أسطورياً بعدها.' },
-      { type: 'treasure', valueScore: 500, frontIcon: '🗣️😠', frontTitle: 'صديق مستفز يواجهك', frontDesc: 'صديق ينتقدك دائماً.', frontFeatures: ['مجادلات مستمرة', 'لا يجاملك'], backIcon: '💎🛡️', backTitle: 'الكنز المخفي!', backDesc: 'حائط صد ضد التوهان', backDetails: 'وقف في ظهرك وقت الأزمات عندما هرب الآخرون.' },
-      { type: 'treasure', valueScore: 500, frontIcon: '⏳🥱', frontTitle: 'سنة من الملل والروتين', frontDesc: 'دراسة وعمل في صمت.', frontFeatures: ['حياة كئيبة للآخرين', 'انعزال للتركيز'], backIcon: '💎🔑', backTitle: 'الكنز المخفي!', backDesc: 'اكتشاف الموهبة', backDetails: 'أتقنت مهارة نادرة جعلتك مطلوباً في كل مكان.' },
-      { type: 'treasure', valueScore: 500, frontIcon: '🚫🏢', frontTitle: 'الرفض في الانترفيو', frontDesc: 'تلقيت إيميل رفض.', frontFeatures: ['إحباط ورفض', 'تأخر مؤقت'], backIcon: '💎🚪', backTitle: 'الكنز المخفي!', backDesc: 'عناية إلهية', backDetails: 'حماك من بيئة سامة ودفعك لاكتشاف شغفك.' },
-      { type: 'treasure', valueScore: 500, frontIcon: '📖🤨', frontTitle: 'مرشد روحي صارم', frontDesc: 'يحاسبك ويضغط عليك.', frontFeatures: ['تكليفات روحية مستمرة', 'تقييد لبعض الحريات'], backIcon: '💎🧭', backTitle: 'الكنز المخفي!', backDesc: 'البوصلة', backDetails: 'يحميك من التفكير المفرط ويعيد لك سلامك الداخلي.' },
-      { type: 'treasure', valueScore: 500, frontIcon: '🚲💸', frontTitle: 'حياة الاستغناء', frontDesc: 'لا تركض وراء الماركات.', frontFeatures: ['مظهر بسيط', 'الناس تظنك فقيراً'], backIcon: '💎🧘', backTitle: 'الكنز المخفي!', backDesc: 'صفر ديون = حرية مطلقة', backDetails: 'تملك راحة البال ولا تخضع لضغوط الماديات.' },
-      { type: 'treasure', valueScore: 500, frontIcon: '🙇‍♂️💔', frontTitle: 'الاعتراف بخطأ كارثي', frontDesc: 'الاعتذار أمام الجميع.', frontFeatures: ['إحراج شديد', 'كسر الكبرياء'], backIcon: '💎🕊️', backTitle: 'الكنز المخفي!', backDesc: 'التحرر والمرونة', backDetails: 'كسبت احترام العقلاء وتخلصت من عقدة الذنب.' },
-      { type: 'treasure', valueScore: 500, frontIcon: '🔄🏗️', frontTitle: 'البداية من الصفر', frontDesc: 'تترك مجالاً ضيعت فيه 4 سنوات.', frontFeatures: ['الناس سيقولون مجنون', 'تأخرت عن دفعتك'], backIcon: '💎🔥', backTitle: 'الكنز المخفي!', backDesc: 'اكتشاف الشغف', backDetails: 'تعمل بشغف بدلاً من أن تعيش كعجوز في مكان لا يشبهك.' }
+      { type: 'trap', frontIcon: '📈🚀', frontTitle: 'النجاح السريع', frontDesc: 'ثروة مفاجئة ونجاح صاروخي بدون تدرج.', frontFeatures: ['أرباح خيالية في أقل من شهر', 'نظرة انبهار من كل الناس'], backIcon: '🚨📉', backTitle: 'مفاجأة: الفخ!', backDesc: 'افتقار للخبرة الحياتية', backDetails: 'خسرت كل شيء سريعاً لأنك لم تبدأ من الصفر.' },
+      { type: 'trap', frontIcon: '📱🤩', frontTitle: 'تريند السوشيال ميديا', frontDesc: 'ملايين المتابعين وشهرة واسعة جداً.', frontFeatures: ['عقود إعلانات خيالية', 'الكل بيتصور معاك'], backIcon: '🚨👁️‍🗨️', backTitle: 'مفاجأة: الفخ!', backDesc: 'قيمتك أصبحت مرهونة باللايكات', backDetails: 'حملة هجوم قاسية دمرت نفسيتك وفقدت هويتك.' },
+      { type: 'trap', frontIcon: '💍💑', frontTitle: 'الارتباط المثالي', frontDesc: 'شريك حياة شكله مبهر وغني جداً.', frontFeatures: ['حياة مليئة بالهدايا', 'مظهر اجتماعي رائع'], backIcon: '🚨⛓️', backTitle: 'مفاجأة: الفخ!', backDesc: 'شريك سام (Toxic)', backDetails: 'يقلل من قيمتك دائماً وتعيش في وحدة قاتلة.' },
+      { type: 'trap', frontIcon: '🎭🤝', frontTitle: 'القبول الاجتماعي', frontDesc: 'محبوب من الجميع بلا استثناء.', frontFeatures: ['علاقات واسعة', 'لا توجد صراعات'], backIcon: '🚨👻', backTitle: 'مفاجأة: الفخ!', backDesc: 'فقدت هويتك لإرضاء الجميع', backDetails: 'تلونت حتى نسيت من أنت حقيقة.' },
+      { type: 'trap', frontIcon: '🕊️🌍', frontTitle: 'الحرية المطلقة', frontDesc: 'استقلال تام بدون أي قيود.', frontFeatures: ['تفعل ما تشاء', 'حياة مليئة بالمغامرات'], backIcon: '🚨🏝️', backTitle: 'مفاجأة: الفخ!', backDesc: 'عزلة تامة وافتقاد للسند', backDetails: 'في أول أزمة لم تجد من يقف بجانبك.' },
+      { type: 'trap', frontIcon: '👔👑', frontTitle: 'منصب قيادي بالواسطة', frontDesc: 'مدير في سن الـ 23.', frontFeatures: ['سلطة ومكتب فخم', 'راتب ضخم'], backIcon: '🚨🥵', backTitle: 'مفاجأة: الفخ!', backDesc: 'متلازمة المحتال وضغط مدمر', backDetails: 'تعيش في رعب من أن ينكشف افتقارك للخبرة.' },
+      { type: 'trap', frontIcon: '✈️🧳', frontTitle: 'الهجرة غير المخططة', frontDesc: 'سفر فوري للهروب من واقعك.', frontFeatures: ['تذكرة ذهاب فقط', 'حياة جديدة'], backIcon: '🚨🚧', backTitle: 'مفاجأة: الفخ!', backDesc: 'هروب بلا هدف', backDetails: 'عمل شاق لا يناسب طموحك وإحساس بالضياع.' },
+      { type: 'trap', frontIcon: '🗣️🔥', frontTitle: 'التمرد الدائم', frontDesc: 'الاعتراض الدائم على كل شيء.', frontFeatures: ['تبدو شخصاً عميقاً', 'تلفت الانتباه'], backIcon: '🚨☣️', backTitle: 'مفاجأة: الفخ!', backDesc: 'شخصية سامة', backDetails: 'خسرت كل من يحبونك بسبب نقدك اللاذع.' },
+      
+      { type: 'treasure', frontIcon: '📉🤦', frontTitle: 'فشل في مشروعك الأول', frontDesc: 'خسرت كل مدخراتك.', frontFeatures: ['إحباط مؤقت', 'نظرة شفقة من الناس'], backIcon: '💎🏆', backTitle: 'الكنز المخفي!', backDesc: 'الدرس العملي', backDetails: 'هذه الخبرة جعلتك تبني مشروعاً أسطورياً بعدها.' },
+      { type: 'treasure', frontIcon: '🗣️😠', frontTitle: 'صديق مستفز يواجهك', frontDesc: 'صديق ينتقدك دائماً.', frontFeatures: ['مجادلات مستمرة', 'لا يجاملك'], backIcon: '💎🛡️', backTitle: 'الكنز المخفي!', backDesc: 'حائط صد ضد التوهان', backDetails: 'وقف في ظهرك وقت الأزمات عندما هرب الآخرون.' },
+      { type: 'treasure', frontIcon: '⏳🥱', frontTitle: 'سنة من الملل والروتين', frontDesc: 'دراسة وعمل في صمت.', frontFeatures: ['حياة كئيبة للآخرين', 'انعزال للتركيز'], backIcon: '💎🔑', backTitle: 'الكنز المخفي!', backDesc: 'اكتشاف الموهبة', backDetails: 'أتقنت مهارة نادرة جعلتك مطلوباً في كل مكان.' },
+      { type: 'treasure', frontIcon: '🚫🏢', frontTitle: 'الرفض في الانترفيو', frontDesc: 'تلقيت إيميل رفض.', frontFeatures: ['إحباط ورفض', 'تأخر مؤقت'], backIcon: '💎🚪', backTitle: 'الكنز المخفي!', backDesc: 'عناية إلهية', backDetails: 'حماك من بيئة سامة ودفعك لاكتشاف شغفك.' },
+      { type: 'treasure', frontIcon: '📖🤨', frontTitle: 'مرشد روحي صارم', frontDesc: 'يحاسبك ويضغط عليك.', frontFeatures: ['تكليفات روحية مستمرة', 'تقييد لبعض الحريات'], backIcon: '💎🧭', backTitle: 'الكنز المخفي!', backDesc: 'البوصلة', backDetails: 'يحميك من التفكير المفرط ويعيد لك سلامك الداخلي.' },
+      { type: 'treasure', frontIcon: '🚲💸', frontTitle: 'حياة الاستغناء', frontDesc: 'لا تركض وراء الماركات.', frontFeatures: ['مظهر بسيط', 'الناس تظنك فقيراً'], backIcon: '💎🧘', backTitle: 'الكنز المخفي!', backDesc: 'صفر ديون = حرية مطلقة', backDetails: 'تملك راحة البال ولا تخضع لضغوط الماديات.' },
+      { type: 'treasure', frontIcon: '🙇‍♂️💔', frontTitle: 'الاعتراف بخطأ كارثي', frontDesc: 'الاعتذار أمام الجميع.', frontFeatures: ['إحراج شديد', 'كسر الكبرياء'], backIcon: '💎🕊️', backTitle: 'الكنز المخفي!', backDesc: 'التحرر والمرونة', backDetails: 'كسبت احترام العقلاء وتخلصت من عقدة الذنب.' },
+      { type: 'treasure', frontIcon: '🔄🏗️', frontTitle: 'البداية من الصفر', frontDesc: 'تترك مجالاً ضيعت فيه 4 سنوات.', frontFeatures: ['الناس سيقولون مجنون', 'تأخرت عن دفعتك'], backIcon: '💎🔥', backTitle: 'الكنز المخفي!', backDesc: 'اكتشاف الشغف', backDetails: 'تعمل بشغف بدلاً من أن تعيش كعجوز في مكان لا يشبهك.' }
     ];
 
     let currentStep = 'welcome';
     let currentCardIndex = 0;
-    let winningTeamId = null;
-    let winningBid = 0;
 
     const urlParams = new URLSearchParams(window.location.search);
     const joinId = urlParams.get('join');
@@ -96,7 +101,7 @@
               conn.send({ type: 'MSG', msg: 'اكتمل العدد الأقصى للفرق (4).' });
               return;
             }
-            const newTeam = { id: teams.length + 1, name: data.name, budget: 1000, valueScore: 0 };
+            const newTeam = { id: teams.length + 1, name: data.name, score: 1000 };
             teams.push(newTeam);
             hostConnections[newTeam.id] = conn;
             
@@ -154,7 +159,7 @@
         conn.on('data', (data) => {
           if (data.type === 'REGISTERED') {
             myTeam = data.team;
-            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-emerald-300"><div class="text-6xl mb-4">✅</div><h2 class="text-2xl font-bold text-emerald-700 mb-2">أهلاً ${myTeam.name}</h2><p class="text-slate-500 font-bold">في انتظار بدء المزاد من الشاشة الرئيسية...</p></div>`;
+            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-emerald-300"><div class="text-6xl mb-4">✅</div><h2 class="text-2xl font-bold text-emerald-700 mb-2">أهلاً ${myTeam.name}</h2><p class="text-slate-500 font-bold">أنت الفريق رقم ${myTeam.id}. في انتظار بدء المزاد...</p></div>`;
           } else if (data.type === 'MSG') {
             alert(data.msg);
           } else if (data.type === 'NEW_CARD') {
@@ -162,12 +167,12 @@
               <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-slate-200">
                  <h2 class="text-xl font-bold text-slate-800 mb-2">المعروض: ${data.cardTitle}</h2>
                  <p class="text-sm text-slate-500 mb-6">أدخل السعر السري لفريقك (${myTeam.name})</p>
-                 <input type="number" id="mobileBid" class="w-full p-4 text-2xl border border-slate-300 rounded-xl mb-6 text-center" placeholder="السعر...">
+                 <input type="number" id="mobileBid" class="w-full p-4 text-2xl border border-slate-300 rounded-xl mb-6 text-center" placeholder="السعر بالنقط...">
                  <button onclick="sendMobileBid()" class="w-full py-4 bg-blue-600 text-white text-2xl font-bold rounded-xl shadow-lg">إرسال السعر 🚀</button>
               </div>
             `;
           } else if (data.type === 'WAIT') {
-            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-blue-300"><div class="text-6xl mb-4">⏳</div><h2 class="text-2xl font-bold text-blue-700 mb-2">تم إرسال سعرك!</h2><p class="text-slate-500 font-bold">ركز مع الشاشة الرئيسية لمعرفة الفائز...</p></div>`;
+            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-blue-300"><div class="text-6xl mb-4">⏳</div><h2 class="text-2xl font-bold text-blue-700 mb-2">تم إرسال سعرك!</h2><p class="text-slate-500 font-bold">ركز مع الشاشة الرئيسية لمعرفة النتيجة...</p></div>`;
           }
         });
       });
@@ -183,12 +188,11 @@
         const bid = document.getElementById('mobileBid').value;
         if (bid === '') { alert('يرجى كتابة السعر!'); return; }
         conn.send({ type: 'BID', teamId: myTeam.id, bid: parseInt(bid) });
-        conn.send({type: 'TRIGGER_WAIT_SCREEN'}); // Client local simulation hack
+        conn.send({type: 'TRIGGER_WAIT_SCREEN'}); 
         body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in"><h2 class="text-2xl font-bold text-blue-700">تم الإرسال ⏳</h2><p>ركز مع الشاشة!</p></div>`;
       };
     }
 
-    // --- Host Functions ---
     function showToast(message) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -198,20 +202,33 @@
       setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
     }
 
-    function renderSidebars() {
-      const valContainer = document.getElementById('value-leaderboard');
-      const budContainer = document.getElementById('budget-leaderboard');
-      const sortedByValue = [...teams].sort((a, b) => b.valueScore - a.valueScore);
-      const sortedByBudget = [...teams].sort((a, b) => b.budget - a.budget);
+    function editTeamNames() {
+      let changed = false;
+      teams.forEach(team => {
+        let newName = prompt(`أدخل الاسم الجديد لـ "${team.name}":`, team.name);
+        if(newName && newName.trim() !== '') {
+          team.name = newName.trim();
+          changed = true;
+        }
+      });
+      if (changed) {
+        renderSidebars();
+        if(currentStep === 'front' || currentStep === 'welcome') renderAuction();
+      }
+    }
 
-      const mapTeam = (t, idx, val, icon) => `
-        <div class="flex items-center justify-between bg-white p-2 rounded-lg border shadow-sm mb-2">
-          <div class="flex items-center gap-2"><span class="font-bold w-6 h-6 flex items-center justify-center rounded-full text-sm bg-slate-100">${idx+1}</span><span class="font-semibold text-sm truncate">${t.name}</span></div>
-          <span class="font-black text-sm" dir="ltr">${val}${icon}</span>
-        </div>`;
-      
-      valContainer.innerHTML = sortedByValue.map((t, idx) => mapTeam(t, idx, t.valueScore>0?'+'+t.valueScore:t.valueScore, '')).join('');
-      budContainer.innerHTML = sortedByBudget.map((t, idx) => mapTeam(t, idx, t.budget, '💰')).join('');
+    function renderSidebars() {
+      const scoreContainer = document.getElementById('score-leaderboard');
+      const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+
+      scoreContainer.innerHTML = sortedTeams.map((t, idx) => `
+        <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm mb-3">
+          <div class="flex items-center gap-3">
+            <span class="font-bold w-8 h-8 flex items-center justify-center rounded-full text-lg ${idx===0?'bg-amber-100 text-amber-700':'bg-slate-100 text-slate-700'}">${idx+1}</span>
+            <span class="font-bold text-lg truncate">${t.name}</span>
+          </div>
+          <span class="font-black text-xl text-blue-700" dir="ltr">${t.score} 💰</span>
+        </div>`).join('');
     }
 
     function renderAuction() {
@@ -221,7 +238,7 @@
       if (currentStep === 'welcome') {
         const joinedList = teams.map(t => `<span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold shadow-sm">${t.name} ✅</span>`).join(' ');
         const emptySlotsCount = 4 - teams.length;
-        const emptySlots = Array(emptySlotsCount).fill('<span class="bg-slate-200 text-slate-500 px-3 py-1 rounded-full border border-dashed border-slate-400">في انتظار الانضمام...</span>').join(' ');
+        const emptySlots = Array(emptySlotsCount).fill('<span class="bg-slate-200 text-slate-500 px-3 py-1 rounded-full border border-dashed border-slate-400">في انتظار انضمام فريق...</span>').join(' ');
 
         auctionContainer.innerHTML = `
           <div class="fade-in bg-white p-6 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
@@ -229,7 +246,7 @@
             <h1 class="text-3xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-700">مزاد القيم والوزنات</h1>
             
             <div class="my-8 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <h3 class="font-bold text-lg mb-3">الفرق المنضمة (${teams.length}/4):</h3>
+              <h3 class="font-bold text-lg mb-3">الفرق المنضمة للمزاد (${teams.length}/4):</h3>
               <div class="flex flex-wrap gap-2 justify-center">${joinedList} ${emptySlots}</div>
             </div>
 
@@ -242,18 +259,17 @@
       else if (currentStep === 'front') {
         const card = cards[currentCardIndex];
         
-        // Secret bids statuses
         const statuses = teams.map(t => {
           const hasBid = currentBids[t.id] !== undefined;
           return `
             <div class="flex items-center justify-between bg-white p-3 rounded-xl border ${hasBid ? 'border-emerald-400 bg-emerald-50' : 'border-slate-300'} shadow-sm">
-              <div class="font-bold text-slate-800 text-sm md:text-lg">${t.name} (رصيد: ${t.budget})</div>
+              <div class="font-bold text-slate-800 text-sm md:text-lg">${t.name} (نقاطه: ${t.score})</div>
               <div class="font-bold ${hasBid ? 'text-emerald-600' : 'text-slate-400'}">${hasBid ? 'تم إرسال السعر ✅' : 'في الانتظار... ⏳'}</div>
             </div>
           `;
         }).join('');
 
-        const allBidded = teams.every(t => currentBids[t.id] !== undefined);
+        const allBidded = teams.every(t => currentBids[t.id] !== undefined) && teams.length > 0;
 
         auctionContainer.innerHTML = `
           <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
@@ -266,35 +282,30 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">${statuses}</div>
             </div>
 
-            <button onclick="revealAllAndCalculate()" class="bg-amber-600 text-white px-6 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-amber-700 transition-all w-full ${!allBidded ? 'animate-pulse' : ''}">
-              ${allBidded ? 'كل الفرق جاهزة! إغلاق المزاد وإعلان الفائز 🔨' : 'إغلاق المزاد فوراً (تخطي المنتظرين) 🔨'}
+            <button onclick="revealBidsScreen()" class="bg-amber-600 text-white px-6 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-amber-700 transition-all w-full ${!allBidded ? 'animate-pulse' : ''}">
+              ${allBidded ? 'كل الفرق جاهزة! إغلاق المزاد وإعلان الأسعار 🔨' : 'إغلاق المزاد فوراً (تخطي المنتظرين) 🔨'}
             </button>
           </div>
         `;
       } 
       else if (currentStep === 'reveal_bids') {
-        const card = cards[currentCardIndex];
-        
         const bidResults = teams.map(t => {
           const bidAmount = currentBids[t.id] !== undefined ? currentBids[t.id] : 0;
-          const isWinner = t.id === winningTeamId;
           return `
-            <div class="flex items-center justify-between p-4 rounded-xl border-2 ${isWinner ? 'border-amber-400 bg-amber-50 scale-105' : 'border-slate-200 bg-white'} shadow-sm transition-all duration-500">
-              <div class="font-bold text-slate-800 text-lg">${t.name}</div>
-              <div class="font-black text-2xl ${isWinner ? 'text-amber-600' : 'text-slate-600'}">${bidAmount}</div>
+            <div class="flex items-center justify-between p-4 rounded-xl border-2 border-slate-300 bg-white shadow-sm">
+              <div class="font-bold text-slate-800 text-xl">${t.name}</div>
+              <div class="font-black text-3xl text-blue-700">${bidAmount}</div>
             </div>
           `;
         }).join('');
 
         auctionContainer.innerHTML = `
           <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
-            <h2 class="text-3xl font-extrabold mb-6 text-slate-800">الأسعار المعروضة 💸</h2>
-            <div class="grid grid-cols-1 gap-4 mb-8">${bidResults}</div>
-            <div class="bg-amber-100 text-amber-800 p-4 rounded-xl font-bold text-2xl mb-6 shadow border border-amber-300">
-              🎉 مبروك لفريق (${teams.find(t=>t.id==winningTeamId)?.name}) المزايدة بـ ${winningBid}!
-            </div>
-            <button onclick="showBackCard()" class="bg-blue-600 text-white px-8 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-blue-700 w-full">
-              اكشف حقيقة الكارت 🔍
+            <h2 class="text-3xl font-extrabold mb-6 text-slate-800">الأسعار اللي اتسجلت في السر 🤫</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">${bidResults}</div>
+            <p class="text-lg text-slate-600 font-bold mb-6">يا ترى المعروض ده كنز ولا فخ؟ ومين اللي كسب؟ 🤔</p>
+            <button onclick="showBackCard()" class="bg-blue-600 text-white px-8 py-4 rounded-xl text-2xl font-bold shadow-lg hover:bg-blue-700 w-full animate-bounce">
+              اكشف حقيقة الكارت والنتيجة 🔍
             </button>
           </div>
         `;
@@ -309,54 +320,68 @@
             <h2 class="text-2xl md:text-4xl font-extrabold mb-4 ${isTrap?'text-red-700':'text-emerald-700'}">${card.backTitle}</h2>
             <p class="text-slate-600 text-lg md:text-2xl mb-6">${card.backDesc}</p>
             
-            <div class="${isTrap?'bg-red-50 border-red-200':'bg-emerald-50 border-emerald-200'} border p-4 rounded-2xl mb-8 text-right">
-              <h3 class="font-bold text-lg mb-3 ${isTrap?'text-red-800':'text-emerald-800'} border-b pb-2 flex justify-between">
-                <span>التفاصيل الحقيقية:</span>
-                <span dir="ltr" class="font-black">${card.valueScore > 0 ? '+'+card.valueScore : card.valueScore} قيمة</span>
-              </h3>
-              <p class="text-lg ${isTrap?'text-red-900':'text-emerald-900'} font-semibold">${card.backDetails}</p>
-            </div>
-            
-            <button onclick="nextCard()" class="bg-slate-800 text-white px-8 py-4 rounded-xl text-xl font-bold w-full">المعروض التالي ➡️</button>
+            <!-- نتيجة العملية الحسابية -->
+            ${lastMathResultHTML}
+
+            <button onclick="nextCard()" class="mt-8 bg-slate-800 text-white px-8 py-4 rounded-xl text-xl font-bold w-full hover:bg-slate-900 transition-colors shadow-lg">المعروض التالي ➡️</button>
           </div>
         `;
       }
     }
 
-    function revealAllAndCalculate() {
-      let maxBid = -1;
-      let winners = [];
-      
-      teams.forEach(t => {
-        let bid = currentBids[t.id] !== undefined ? currentBids[t.id] : 0;
-        if (bid > maxBid) { maxBid = bid; winners = [t.id]; } 
-        else if (bid === maxBid && bid > 0) { winners.push(t.id); }
-      });
-
-      if (maxBid === 0) { alert("لم يقم أي فريق بتقديم عرض!"); return; }
-      if (winners.length > 1) { alert("تعادل! يجب إعادة المزايدة."); currentBids = {}; renderAuction(); return; }
-
-      winningTeamId = winners[0];
-      winningBid = maxBid;
-      const team = teams.find(t => t.id === winningTeamId);
-      
-      if (team.budget < winningBid) {
-        alert(`رصيد (${team.name}) لا يكفي! الرصيد: ${team.budget}`);
-        currentBids[winningTeamId] = 0; // Disqualify illegal bid
-        renderAuction();
-        return;
-      }
-
+    function revealBidsScreen() {
+      if (teams.length === 0) return;
       currentStep = 'reveal_bids';
       renderAuction();
     }
 
     function showBackCard() {
-      const team = teams.find(t => t.id === winningTeamId);
-      team.budget -= winningBid;
-      team.valueScore += cards[currentCardIndex].valueScore;
+      const card = cards[currentCardIndex];
+      const isTrap = card.type === 'trap';
+      
+      let maxBid = -1;
+      let minBid = Infinity;
+      
+      teams.forEach(t => {
+        let bid = currentBids[t.id] !== undefined ? currentBids[t.id] : 0;
+        if (bid > maxBid) maxBid = bid;
+        if (bid < minBid) minBid = bid;
+      });
+
+      let maxTeams = teams.filter(t => (currentBids[t.id]||0) === maxBid);
+      let minTeams = teams.filter(t => (currentBids[t.id]||0) === minBid);
+
+      lastMathResultHTML = '';
+
+      if (isTrap) {
+        lastMathResultHTML += `<div class="bg-red-50 p-5 rounded-2xl border-2 border-red-300 mt-6 text-right"><h3 class="font-extrabold text-red-800 text-2xl mb-4 text-center border-b border-red-200 pb-2">🚨 نتيـجـة الفـــخ 🚨</h3><div class="space-y-3">`;
+        teams.forEach(t => {
+            let bid = currentBids[t.id] || 0;
+            if (minTeams.includes(t)) {
+                t.score += 100; // Bonus for escaping
+                lastMathResultHTML += `<div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg font-bold text-lg flex justify-between"><span>نجا (${t.name}) لأنه أقل مراهن! 🎉</span><span dir="ltr">+100 نقطة</span></div>`;
+            } else {
+                t.score -= bid; // Penalty
+                lastMathResultHTML += `<div class="bg-red-100 text-red-800 p-3 rounded-lg font-bold text-lg flex justify-between"><span>وقع (${t.name}) في الفخ! ❌</span><span dir="ltr">خسر ${bid} نقطة</span></div>`;
+            }
+        });
+        lastMathResultHTML += `</div></div>`;
+      } else {
+        lastMathResultHTML += `<div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-300 mt-6 text-right"><h3 class="font-extrabold text-emerald-800 text-2xl mb-4 text-center border-b border-emerald-200 pb-2">💎 نتيـجـة الكنـــز 💎</h3><div class="space-y-3">`;
+        teams.forEach(t => {
+            let bid = currentBids[t.id] || 0;
+            if (maxTeams.includes(t)) {
+                t.score += 300;
+                lastMathResultHTML += `<div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg font-bold text-lg flex justify-between"><span>فاز (${t.name}) بالكنز (أعلى مراهن)! 🎉</span><span dir="ltr">+300 نقطة</span></div>`;
+            } else {
+                lastMathResultHTML += `<div class="bg-slate-100 text-slate-500 p-3 rounded-lg font-bold text-lg flex justify-between"><span>فريق (${t.name}) حظ أوفر..</span><span>0 نقطة</span></div>`;
+            }
+        });
+        lastMathResultHTML += `</div></div>`;
+      }
+
       currentStep = 'back';
-      renderSidebars();
+      renderSidebars(); // Update scores on the left
       renderAuction();
     }
 
@@ -368,6 +393,7 @@
       currentStep = 'front';
       currentCardIndex = 0;
       currentBids = {};
+      teams.forEach(t => t.score = 1000); // Reset scores
       broadcast({ type: 'NEW_CARD', cardTitle: cards[currentCardIndex].frontTitle });
       renderSidebars();
       renderAuction();
