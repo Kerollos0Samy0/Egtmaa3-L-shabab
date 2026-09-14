@@ -44,9 +44,9 @@
       </div>
       <div id="toast-container"></div>
 
-      <!-- Floating Toggle Button -->
-      <button onclick="toggleSidebar()" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 bg-slate-800 text-white px-4 md:px-6 py-3 md:py-4 rounded-full shadow-2xl font-bold z-50 hover:bg-slate-900 transition-all hover:scale-105 flex items-center gap-2">
-        🏆 إظهار/إخفاء النقاط
+      <!-- Fixed Arrow Toggle Button (Top Left) -->
+      <button id="sidebar-toggle-btn" onclick="toggleSidebar()" class="fixed top-4 left-4 md:top-6 md:left-6 bg-white border-2 border-slate-300 text-slate-700 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-50 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 hover:scale-110 transition-all font-black text-xl md:text-2xl">
+        ❮
       </button>
 
       <div class="w-full lg:w-2/3 xl:w-3/4 min-h-[60vh] lg:h-screen relative flex items-center justify-center p-4 md:p-8 bg-slate-100 lg:overflow-y-auto transition-all duration-300" id="auction-container">
@@ -155,15 +155,18 @@
       isSidebarVisible = !isSidebarVisible;
       const sidebar = document.getElementById('sidebar');
       const main = document.getElementById('auction-container');
+      const btn = document.getElementById('sidebar-toggle-btn');
       
       if (isSidebarVisible) {
         sidebar.style.display = 'flex';
         main.classList.remove('lg:w-full');
         main.classList.add('lg:w-2/3', 'xl:w-3/4');
+        if(btn) btn.innerHTML = '❮';
       } else {
         sidebar.style.display = 'none';
         main.classList.remove('lg:w-2/3', 'xl:w-3/4');
         main.classList.add('lg:w-full');
+        if(btn) btn.innerHTML = '❯';
       }
     }
 
