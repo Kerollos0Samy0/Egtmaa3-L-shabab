@@ -19,18 +19,23 @@
 </head>
 <body id="app-body" class="bg-slate-50 text-slate-900 antialiased min-h-screen w-full flex flex-col lg:flex-row relative">
   
-  <div id="host-ui" class="w-full flex flex-col lg:flex-row min-h-screen">
+  <div id="host-ui" class="w-full flex flex-col lg:flex-row min-h-screen relative">
       <div class="fixed top-2 right-2 md:top-6 md:right-6 flex flex-col items-center bg-white p-2 rounded-xl shadow-xl border border-slate-200 z-50">
         <p class="text-[10px] md:text-xs font-bold text-slate-700 mb-1">امسح لتسجيل فريقك</p>
         <img id="qr-image" src="" alt="..." class="w-16 h-16 md:w-24 md:h-24 bg-slate-100 flex items-center justify-center">
       </div>
       <div id="toast-container"></div>
 
-      <div class="w-full lg:w-2/3 xl:w-3/4 min-h-[60vh] lg:h-screen relative flex items-center justify-center p-4 md:p-8 bg-slate-100 lg:overflow-y-auto" id="auction-container">
+      <!-- Floating Toggle Button -->
+      <button onclick="toggleSidebar()" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 bg-slate-800 text-white px-4 md:px-6 py-3 md:py-4 rounded-full shadow-2xl font-bold z-50 hover:bg-slate-900 transition-all hover:scale-105 flex items-center gap-2">
+        🏆 إظهار/إخفاء النقاط
+      </button>
+
+      <div class="w-full lg:w-2/3 xl:w-3/4 min-h-[60vh] lg:h-screen relative flex items-center justify-center p-4 md:p-8 bg-slate-100 lg:overflow-y-auto transition-all duration-300" id="auction-container">
       </div>
 
       <!-- Single Leaderboard Sidebar -->
-      <div class="w-full lg:w-1/3 xl:w-1/4 h-auto lg:h-screen border-t lg:border-t-0 lg:border-r border-slate-300 flex flex-col bg-white shadow-2xl z-10 pb-8 lg:pb-0">
+      <div id="sidebar" class="w-full lg:w-1/3 xl:w-1/4 h-auto lg:h-screen border-t lg:border-t-0 lg:border-r border-slate-300 flex flex-col bg-white shadow-2xl z-10 pb-24 lg:pb-0 transition-all duration-300">
         <div class="flex-1 p-4 lg:p-5 flex flex-col bg-slate-50">
           <h3 class="text-xl md:text-2xl font-extrabold text-blue-800 flex items-center justify-center gap-2 mb-6 border-b-2 border-blue-200 pb-4">
             🏆 لوحة النقاط
@@ -51,6 +56,7 @@
     let currentBids = {}; 
     let hostConnections = {}; 
     let lastMathResultHTML = '';
+    let isSidebarVisible = true;
 
     let cards = [
       { type: 'trap', frontIcon: '📈🚀', frontTitle: 'النجاح السريع', frontDesc: 'ثروة مفاجئة ونجاح صاروخي بدون تدرج.', frontFeatures: ['أرباح خيالية في أقل من شهر', 'نظرة انبهار من كل الناس'], backIcon: '🚨📉', backTitle: 'مفاجأة: الفخ!', backDesc: 'افتقار للخبرة الحياتية', backDetails: 'خسرت كل شيء سريعاً لأنك لم تبدأ من الصفر.' },
@@ -84,6 +90,22 @@
       initClient(joinId);
     } else {
       initHost();
+    }
+
+    function toggleSidebar() {
+      isSidebarVisible = !isSidebarVisible;
+      const sidebar = document.getElementById('sidebar');
+      const main = document.getElementById('auction-container');
+      
+      if (isSidebarVisible) {
+        sidebar.style.display = 'flex';
+        main.classList.remove('lg:w-full');
+        main.classList.add('lg:w-2/3', 'xl:w-3/4');
+      } else {
+        sidebar.style.display = 'none';
+        main.classList.remove('lg:w-2/3', 'xl:w-3/4');
+        main.classList.add('lg:w-full');
+      }
     }
 
     function initHost() {
