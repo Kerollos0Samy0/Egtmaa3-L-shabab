@@ -682,11 +682,11 @@
 		}
 
 		/* image made slightly smaller + subtle reveal/hover animation */
+
 		.day-image-wrap {
 			position: relative;
 			width: 100%;
-			aspect-ratio: 21 / 9;
-			max-height: 180px;
+			height: 440px;
 			border-radius: 14px;
 			overflow: hidden;
 			margin-bottom: 14px;
@@ -705,13 +705,14 @@
 			width: 100%;
 			height: 100%;
 			object-fit: cover;
+			object-position: center 25%;
 			display: block;
 			transition: transform .5s ease;
 		}
 
 		.day-card:hover .day-image {
 			transform: scale(1.05);
-		}
+		} 
 
 		.day-image-fallback {
 			position: absolute;
@@ -1749,7 +1750,7 @@
         const DAYS = [
             {
                 num: '1', date: '20/9', title: 'Ready To Discover ',
-                image: 'https://picsum.photos/seed/yousif-disk-personality/700/400',
+                image: 'file:///C:/Users/ACC/source/repos/NewRepo2/WhatsApp%20Image%202026-09-14%20at%202.50.11%20AM.jpeg',
                 imageAlt: 'صورة تعبيرية عن اكتشاف الشخصية - يوم DISK',
                 fallbackEmoji: '🪞',
                 speaker: 'أ :جورج حكيم ',
@@ -1757,7 +1758,7 @@
             },
             {
                 num: '1', date: '20/9', title: 'قولتلهم هسأل ',
-                image: 'https://picsum.photos/seed/yousif-lost-direction/700/400',
+                image: 'file:///C:/Users/ACC/source/repos/NewRepo2/.vs/NewRepo2.slnx/WhatsApp%20Image%202026-09-14%20at%2012.54.43%20PM.jpeg',
                 imageAlt: 'صورة تعبيرية عن البحث عن الاتجاه - يوم انا رايح فين',
                 fallbackEmoji: '🧭',
                 speaker: 'د:فيليب كامل ',
