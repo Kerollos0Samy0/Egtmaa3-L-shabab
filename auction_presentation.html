@@ -6,6 +6,7 @@
   <title>مزاد القيم والوزنات</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
     
@@ -39,7 +40,7 @@
   
   <div id="host-ui" class="w-full flex flex-col lg:flex-row min-h-screen relative">
       
-      <!-- Small QR Container (Hidden after start) -->
+      <!-- Small QR Container -->
       <div id="qr-container" onclick="toggleQRModal()" class="fixed top-2 right-2 md:top-6 md:right-6 flex flex-col items-center bg-white p-2 rounded-xl shadow-xl border border-slate-200 z-50 cursor-pointer hover:scale-105 transition-all">
         <p class="text-[10px] md:text-xs font-bold text-slate-700 mb-1">امسح لتسجيل فريقك</p>
         <img id="qr-image" src="" alt="..." class="w-16 h-16 md:w-24 md:h-24 bg-slate-100 flex items-center justify-center">
@@ -57,7 +58,7 @@
 
       <div id="toast-container"></div>
 
-      <!-- Fixed Arrow Toggle Button (Top Left) -->
+      <!-- Fixed Arrow Toggle Button -->
       <button id="sidebar-toggle-btn" onclick="toggleSidebar()" class="fixed top-2 left-2 md:top-3 md:left-4 bg-white border-2 border-slate-300 text-slate-700 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-50 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 hover:scale-110 transition-all font-black text-xl md:text-2xl">
         ❯
       </button>
@@ -83,7 +84,7 @@
   </div>
 
   <script>
-    // --- Audio Engine (Generates sounds without external files) ---
+    // --- Audio Engine ---
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     
@@ -142,7 +143,7 @@
       { type: 'trap', frontIcon: '✈️🧳', frontTitle: 'تأشيرة لأوروبا بكرا الصبح', frontDesc: 'فيزا مفاجئة لدولة أوروبية للبدء من جديد.', frontFeatures: ['حياة جديدة بالكامل', 'تذكرة ذهاب للنجاح المبهر'], backIcon: '🚨🚧', backTitle: 'مفاجأة: الفخ!', backDesc: 'هروب بلا هدف', backDetails: 'عمل شاق لا يناسب طموحك وإحساس مرعب بالضياع والغربة.' },
       { type: 'trap', frontIcon: '🧠✨', frontTitle: 'كاريزما طاغية وذكاء خارق', frontDesc: 'تبدو أكثر ذكاءً وعمقاً من كل من حولك.', frontFeatures: ['تلفت الانتباه دائماً برأيك', 'الجميع يستمع لنقدك وانتقاداتك'], backIcon: '🚨☣️', backTitle: 'مفاجأة: الفخ!', backDesc: 'التمرد الدائم والشخصية السامة', backDetails: 'خسرت كل من يحبونك بسبب نقدك اللاذع وتعاليك عليهم.' },
       
-      // 🟢 Treasures (Rewritten to look just as appealing as traps)
+      // 🟢 Treasures
       { type: 'treasure', frontIcon: '🏢💡', frontTitle: 'لقب رائد أعمال (CEO)', frontDesc: 'شركة ناشئة باسمك، استثمارات ضخمة، وبقيت مدير نفسك.', frontFeatures: ['حرية في اتخاذ القرار', 'أرباح محتملة لا نهائية'], backIcon: '💎🏆', backTitle: 'الكنز المخفي!', backDesc: 'الدرس العملي والصلابة', backDetails: 'حتى لو واجهت أزمات في البداية، الشركة علمتك تقف على رجلك وتبني شخصية مستحيل تتكسر.' },
       { type: 'treasure', frontIcon: '🤝🔥', frontTitle: 'دخول شلة الـ VIP', frontDesc: 'بقيت جزء من شلة مشاهير وشخصيات قوية، وأبواب كلها بتتفتحلك.', frontFeatures: ['سهرات وخروجات مميزة', 'نفوذ قوي في كل مكان'], backIcon: '💎🛡️', backTitle: 'الكنز المخفي!', backDesc: 'حائط صد ضد التوهان', backDetails: 'اكتشفت إنهم صحاب بجد، واجهوك بعيوبك ومنعوك تضيع، ووقفوا في ظهرك وقت الأزمات.' },
       { type: 'treasure', frontIcon: '🧘‍♂️📚', frontTitle: 'إجازة طويلة مدفوعة الأجر', frontDesc: 'راحة تامة، مفيش شغل ولا دوشة، ومرتبك ماشي زي ما هو.', frontFeatures: ['روتين مريح جداً', 'وقت كبير جداً لنفسك بدون ضغط'], backIcon: '💎🔑', backTitle: 'الكنز المخفي!', backDesc: 'اكتشاف الموهبة', backDetails: 'في وقت الصمت والملل ده، قعدت مع نفسك واكتشفت شغف حقيقي خلاك مميز ومطلوب.' },
@@ -209,7 +210,7 @@
       peer.on('connection', (conn) => {
         conn.on('data', (data) => {
           if (data.type === 'REGISTER') {
-            const newTeam = { id: teams.length + 1, name: data.name, score: 1000 };
+            const newTeam = { id: teams.length + 1, name: data.name, emoji: data.emoji || '🔥', score: 1000, usedJoker: false };
             teams.push(newTeam);
             hostConnections[newTeam.id] = conn;
             
@@ -220,8 +221,8 @@
             if (currentStep === 'welcome') renderAuction();
             
           } else if (data.type === 'BID') {
-            currentBids[data.teamId] = data.bid;
-            showToast(`✅ ${teams.find(t=>t.id===data.teamId)?.name} أرسل تسعيرته`);
+            currentBids[data.teamId] = data.bid; // Can be a number or 'JOKER'
+            showToast(`✅ ${teams.find(t=>t.id===data.teamId)?.name} أرسل ${data.bid === 'JOKER' ? 'الجوكر 🃏' : 'تسعيرته'}`);
             if (currentStep === 'front') renderAuction(); 
           }
         });
@@ -239,14 +240,26 @@
 
     function initClient(hostId) {
       const body = document.getElementById('app-body');
-      body.className = "bg-slate-100 text-slate-900 flex flex-col items-center min-h-screen p-6";
+      body.className = "bg-slate-100 text-slate-900 flex flex-col items-center min-h-screen p-6 transition-colors duration-1000";
       
+      let selectedEmoji = '🦁';
+      const emojis = ['🦁','🦅','🦈','🔥','⚡','⭐','👑','💎'];
+      
+      window.selectEmoji = function(e) {
+          selectedEmoji = e;
+          renderRegister();
+      }
+
       function renderRegister() {
+        let emHTML = emojis.map(e => `<button onclick="selectEmoji('${e}')" class="text-3xl p-2 rounded-xl border-2 transition-all hover:scale-110 ${e===selectedEmoji?'border-blue-500 bg-blue-50 scale-110':'border-transparent hover:bg-slate-100'}">${e}</button>`).join('');
+        
         body.innerHTML = `
           <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-slate-200">
              <h1 class="text-3xl font-extrabold text-blue-700 mb-6">تسجيل فريق جديد 🚀</h1>
-             <input type="text" id="mobileName" class="w-full p-4 text-xl border border-slate-300 rounded-xl mb-6 text-center" placeholder="اكتب اسم فريقك هنا...">
-             <button id="regBtn" onclick="registerMobile()" class="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white text-xl font-bold rounded-xl disabled:opacity-50">جاري الاتصال...</button>
+             <p class="text-slate-500 font-bold mb-3">اختار شعار فريقك:</p>
+             <div class="flex flex-wrap justify-center gap-2 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">${emHTML}</div>
+             <input type="text" id="mobileName" class="w-full p-4 text-xl border border-slate-300 rounded-xl mb-6 text-center focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all" placeholder="اكتب اسم فريقك هنا...">
+             <button id="regBtn" onclick="registerMobile()" class="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white text-xl font-bold rounded-xl disabled:opacity-50 transition-colors shadow-lg">جاري الاتصال بالمزاد...</button>
           </div>
         `;
       }
@@ -255,29 +268,38 @@
       peer = new Peer();
       let conn;
       let myTeam = null;
+      let myTeamScore = 1000;
+      let hasUsedJoker = false;
       
       peer.on('open', () => {
         conn = peer.connect(hostId);
         conn.on('open', () => {
           const btn = document.getElementById('regBtn');
-          if(btn) { btn.innerText = "إنضمام للمزاد"; btn.classList.add('bg-blue-600'); }
+          if(btn) { btn.innerText = "إنضمام للمزاد"; btn.classList.replace('bg-amber-500', 'bg-blue-600'); btn.classList.replace('hover:bg-amber-600', 'hover:bg-blue-700'); }
         });
 
         conn.on('data', (data) => {
           if (data.type === 'REGISTERED') {
             myTeam = data.team;
-            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-emerald-300"><div class="text-6xl mb-4">✅</div><h2 class="text-2xl font-bold text-emerald-700 mb-2">أهلاً ${myTeam.name}</h2><p class="text-slate-500 font-bold">أنت الفريق رقم ${myTeam.id}. في انتظار بدء المزاد...</p></div>`;
+            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-emerald-300"><div class="text-7xl mb-4">${myTeam.emoji}</div><h2 class="text-2xl font-bold text-emerald-700 mb-2">أهلاً فريق ${myTeam.name}</h2><p class="text-slate-500 font-bold">أنت الفريق رقم ${myTeam.id}. في انتظار بدء المزاد...</p></div>`;
           } else if (data.type === 'NEW_CARD') {
+            body.className = "bg-slate-100 text-slate-900 flex flex-col items-center min-h-screen p-6 transition-colors duration-1000"; // reset bg
             body.innerHTML = `
               <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-slate-200 relative overflow-hidden">
                  <div id="client-timer-bar" class="absolute top-0 left-0 h-2 bg-blue-500 transition-all duration-1000" style="width: 100%;"></div>
+                 
+                 <div class="mb-4 bg-emerald-100 text-emerald-800 p-3 rounded-xl font-black text-xl shadow-sm border border-emerald-200">رصيدك الحالي: ${myTeamScore} 💰</div>
+                 
                  <div class="mt-4 flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-slate-800 truncate">المعروض: ${data.cardTitle}</h2>
+                    <h2 class="text-xl font-bold text-slate-800 truncate w-3/4 text-right">${data.cardTitle}</h2>
                     <div id="client-timer-text" class="text-2xl font-black text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border-2 border-slate-300">15</div>
                  </div>
-                 <p class="text-sm text-slate-500 mb-6">أدخل السعر السري لفريقك بسرعة!</p>
-                 <input type="number" id="mobileBid" class="w-full p-4 text-2xl border border-slate-300 rounded-xl mb-6 text-center" placeholder="السعر بالنقط...">
-                 <button onclick="sendMobileBid()" class="w-full py-4 bg-blue-600 text-white text-2xl font-bold rounded-xl shadow-lg">إرسال السعر 🚀</button>
+                 
+                 <p class="text-sm text-slate-500 mb-4 font-bold">أدخل السعر السري لفريقك بسرعة!</p>
+                 <input type="number" id="mobileBid" class="w-full p-4 text-2xl border-2 border-slate-300 rounded-xl mb-4 text-center focus:border-blue-500 outline-none transition-all font-black" placeholder="السعر بالنقط...">
+                 <button onclick="sendMobileBid()" class="w-full py-4 bg-blue-600 text-white text-2xl font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-all active:scale-95 mb-4">إرسال السعر 🚀</button>
+                 
+                 ${!hasUsedJoker ? `<button onclick="useJoker()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold rounded-xl shadow-md border border-purple-800 transition-all active:scale-95">🃏 استخدام الجوكر (انسحاب آمن)</button>` : `<div class="p-3 bg-slate-100 rounded-xl text-slate-400 font-bold border border-slate-200">تم استخدام الجوكر مسبقاً 🃏</div>`}
               </div>
             `;
           } else if (data.type === 'TIMER') {
@@ -294,7 +316,24 @@
                 }
             }
           } else if (data.type === 'WAIT') {
-            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-blue-300"><div class="text-6xl mb-4">⏳</div><h2 class="text-2xl font-bold text-blue-700 mb-2">انتهى الوقت / تم الإرسال!</h2><p class="text-slate-500 font-bold">ركز مع الشاشة الرئيسية لمعرفة النتيجة...</p></div>`;
+            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-blue-300"><div class="text-6xl mb-4 animate-bounce">⏳</div><h2 class="text-2xl font-bold text-blue-700 mb-2">انتهى الوقت!</h2><p class="text-slate-500 font-bold">ركز مع الشاشة الرئيسية لمعرفة النتيجة...</p></div>`;
+          } else if (data.type === 'RESULT') {
+            myTeamScore = data.score;
+            let bg = 'bg-slate-100', icon = '😐', msg = '', color = 'text-slate-700';
+            
+            if(data.status === 'win') { bg = 'bg-emerald-500'; icon = '🎉'; msg = 'كسبـــــت!'; color = 'text-white'; }
+            if(data.status === 'lose') { bg = 'bg-red-600'; icon = '💥'; msg = 'خســـــرت!'; color = 'text-white'; }
+            if(data.status === 'joker') { bg = 'bg-purple-600'; icon = '🃏'; msg = 'نجوت بالجوكر!'; color = 'text-white'; }
+            if(data.status === 'neutral') { bg = 'bg-slate-300'; icon = '🤷‍♂️'; msg = 'حظ أوفر'; color = 'text-slate-700'; }
+            
+            body.className = `flex flex-col items-center justify-center min-h-screen p-6 transition-colors duration-700 ${bg}`;
+            body.innerHTML = `
+                <div class="text-center fade-in scale-in">
+                    <div class="text-8xl mb-6 animate-bounce">${icon}</div>
+                    <h1 class="text-5xl font-black ${color} mb-4 drop-shadow-md">${msg}</h1>
+                    <h2 class="text-3xl font-bold ${color} opacity-90 bg-black/10 px-6 py-3 rounded-2xl inline-block shadow-inner">رصيدك: ${myTeamScore}</h2>
+                </div>
+            `;
           }
         });
       });
@@ -303,7 +342,7 @@
         if (!conn || !conn.open) return;
         const name = document.getElementById('mobileName').value.trim();
         if(!name) { alert("اكتب اسم الفريق!"); return; }
-        conn.send({ type: 'REGISTER', name: name });
+        conn.send({ type: 'REGISTER', name: name, emoji: selectedEmoji });
       };
 
       window.sendMobileBid = function() {
@@ -311,7 +350,16 @@
         if (bid === '') { alert('يرجى كتابة السعر!'); return; }
         conn.send({ type: 'BID', teamId: myTeam.id, bid: parseInt(bid) });
         conn.send({type: 'TRIGGER_WAIT_SCREEN'}); 
-        body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in"><h2 class="text-2xl font-bold text-emerald-600 mb-2">تم الإرسال ⏳</h2><p class="font-bold text-slate-500">مستنيين باقي الفرق والوقت يخلص!</p></div>`;
+        body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-emerald-300"><h2 class="text-3xl font-black text-emerald-600 mb-4">تم الإرسال ✅</h2><p class="font-bold text-slate-500 text-lg">مستنيين باقي الفرق والوقت يخلص!</p></div>`;
+      };
+      
+      window.useJoker = function() {
+          if(confirm('متأكد عايز تستخدم الجوكر وتنسحب من الجولة دي؟ (متاحة مرة واحدة بس طول اللعبة)')) {
+              hasUsedJoker = true;
+              conn.send({ type: 'BID', teamId: myTeam.id, bid: 'JOKER' });
+              conn.send({type: 'TRIGGER_WAIT_SCREEN'}); 
+              body.innerHTML = `<div class="w-full max-w-md bg-purple-50 p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border-2 border-purple-400"><div class="text-7xl mb-4">🃏</div><h2 class="text-3xl font-black text-purple-700 mb-4">تم انسحابك بأمان</h2><p class="font-bold text-slate-500 text-lg">مفيش نقط هتتخصم منك الجولة دي!</p></div>`;
+          }
       };
     }
 
@@ -344,12 +392,14 @@
       const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
 
       scoreContainer.innerHTML = sortedTeams.map((t, idx) => `
-        <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm mb-3 transition-all duration-500">
-          <div class="flex items-center gap-3">
-            <span class="font-bold w-8 h-8 flex items-center justify-center rounded-full text-lg ${idx===0?'bg-amber-100 text-amber-700':'bg-slate-100 text-slate-700'}">${idx+1}</span>
-            <span class="font-bold text-lg truncate">${t.name}</span>
+        <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm mb-3 transition-all duration-500 relative overflow-hidden">
+          ${t.usedJoker ? `<div class="absolute -left-2 -top-2 text-3xl opacity-20 transform -rotate-12">🃏</div>` : ''}
+          <div class="flex items-center gap-2 z-10">
+            <span class="font-bold w-6 h-6 flex items-center justify-center rounded-full text-sm ${idx===0?'bg-amber-100 text-amber-700':'bg-slate-100 text-slate-500'}">${idx+1}</span>
+            <span class="text-2xl">${t.emoji}</span>
+            <span class="font-bold text-lg truncate max-w-[100px]" title="${t.name}">${t.name}</span>
           </div>
-          <span class="font-black text-xl text-blue-700" dir="ltr">${t.score} 💰</span>
+          <span class="font-black text-xl text-blue-700 z-10" dir="ltr">${t.score}</span>
         </div>`).join('');
     }
 
@@ -393,21 +443,21 @@
       }
       
       if (currentStep === 'welcome') {
-        const joinedList = teams.map(t => `<span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold shadow-sm">${t.name} ✅</span>`).join(' ');
+        const joinedList = teams.map(t => `<span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold shadow-sm flex items-center gap-1"><span>${t.emoji}</span> <span>${t.name}</span></span>`).join(' ');
 
         auctionContainer.innerHTML = `
           <div class="fade-in bg-white p-6 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border border-slate-200 mt-12 lg:mt-0">
             <div class="text-6xl md:text-8xl mb-4 md:mb-6 animate-bounce">🎙️🔨</div>
-            <h1 class="text-3xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-700">مزاد القيم والوزنات</h1>
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-700">مزاد القيم والوزنات</h1>
             
-            <div class="my-8 bg-slate-50 p-4 rounded-xl border border-slate-200 min-h-[120px] flex flex-col justify-center">
-              <h3 class="font-bold text-lg md:text-xl mb-4">الفرق المنضمة للمزاد (${teams.length}):</h3>
-              <div class="flex flex-wrap gap-2 justify-center">
-                ${teams.length > 0 ? joinedList : '<span class="text-slate-400 font-bold">لم ينضم أي فريق بعد.. امسح الكود للبدء! 📱</span>'}
+            <div class="my-8 bg-slate-50 p-6 rounded-2xl border border-slate-200 min-h-[120px] flex flex-col justify-center">
+              <h3 class="font-bold text-xl md:text-2xl mb-4 text-slate-700">الفرق المنضمة للمزاد (${teams.length}):</h3>
+              <div class="flex flex-wrap gap-3 justify-center">
+                ${teams.length > 0 ? joinedList : '<span class="text-slate-400 font-bold text-lg">لم ينضم أي فريق بعد.. امسح الكود للبدء! 📱</span>'}
               </div>
             </div>
 
-            <button onclick="initAudio(); startAuction();" class="bg-blue-600 text-white px-8 py-4 rounded-2xl text-2xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50" ${teams.length < 1 ? 'disabled' : ''}>
+            <button onclick="initAudio(); startAuction();" class="bg-blue-600 text-white px-10 py-5 rounded-2xl text-3xl font-black shadow-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50" ${teams.length < 1 ? 'disabled' : ''}>
               ${teams.length < 1 ? 'في انتظار فريق واحد على الأقل...' : 'بدء المزاد 🛒'}
             </button>
           </div>
@@ -417,11 +467,22 @@
         const card = cards[currentCardIndex];
         
         const statuses = teams.map(t => {
-          const hasBid = currentBids[t.id] !== undefined;
+          const bid = currentBids[t.id];
+          const hasBid = bid !== undefined;
+          const isJoker = bid === 'JOKER';
+          
+          let borderClass = 'border-slate-300';
+          let statusText = 'في الانتظار... ⏳';
+          let textClass = 'text-slate-400';
+          let bgClass = 'bg-white';
+          
+          if(hasBid && !isJoker) { borderClass='border-emerald-400'; statusText='تم إرسال السعر ✅'; textClass='text-emerald-600'; bgClass='bg-emerald-50'; }
+          if(isJoker) { borderClass='border-purple-400'; statusText='انسحب بالجوكر 🃏'; textClass='text-purple-700'; bgClass='bg-purple-50'; }
+
           return `
-            <div class="flex items-center justify-between bg-white p-3 rounded-xl border ${hasBid ? 'border-emerald-400 bg-emerald-50' : 'border-slate-300'} shadow-sm transition-all duration-300">
-              <div class="font-bold text-slate-800 text-sm md:text-lg">${t.name} (نقاطه: ${t.score})</div>
-              <div class="font-bold ${hasBid ? 'text-emerald-600' : 'text-slate-400'}">${hasBid ? 'تم إرسال السعر ✅' : 'في الانتظار... ⏳'}</div>
+            <div class="flex items-center justify-between p-3 rounded-xl border ${borderClass} ${bgClass} shadow-sm transition-all duration-300">
+              <div class="font-bold text-slate-800 flex items-center gap-2"><span class="text-xl">${t.emoji}</span> <span class="truncate max-w-[80px]" title="${t.name}">${t.name}</span></div>
+              <div class="font-bold text-sm ${textClass}">${statusText}</div>
             </div>
           `;
         }).join('');
@@ -439,19 +500,19 @@
             </div>
 
             <div class="text-5xl md:text-7xl mb-3 scale-in">${card.frontIcon}</div>
-            <div class="text-slate-500 font-bold text-sm mb-2">المعروض ${currentCardIndex + 1} من ${cards.length}</div>
-            <h2 class="text-2xl md:text-4xl font-bold mb-3 text-slate-900">${card.frontTitle}</h2>
-            <p class="text-lg md:text-xl text-slate-600 mb-4 font-semibold w-3/4 mx-auto">${card.frontDesc}</p>
-            <div class="flex justify-center gap-2 mb-6 flex-wrap">
-              ${card.frontFeatures.map(f => `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold border border-blue-200">${f}</span>`).join('')}
+            <div class="text-slate-500 font-bold text-sm mb-2 text-xl">المعروض ${currentCardIndex + 1} من ${cards.length}</div>
+            <h2 class="text-3xl md:text-5xl font-black mb-4 text-slate-900">${card.frontTitle}</h2>
+            <p class="text-xl md:text-2xl text-slate-600 mb-6 font-bold w-3/4 mx-auto leading-relaxed">${card.frontDesc}</p>
+            <div class="flex justify-center gap-3 mb-8 flex-wrap">
+              ${card.frontFeatures.map(f => `<span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold border border-blue-200">${f}</span>`).join('')}
             </div>
             
-            <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200 mb-5 flex flex-col gap-3 text-right">
-              <h3 class="font-bold text-base text-slate-800">حالة المزايدة (الوقت بيجري!):</h3>
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-6 flex flex-col gap-3 text-right">
+              <h3 class="font-bold text-lg text-slate-800 border-b border-slate-200 pb-2">حالة المزايدة (الوقت بيجري!):</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${statuses}</div>
             </div>
 
-            <button onclick="revealBidsScreen()" class="bg-amber-600 text-white px-6 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-amber-700 transition-all w-full ${!allBidded ? 'opacity-90' : 'animate-pulse'}">
+            <button onclick="revealBidsScreen()" class="bg-amber-500 text-white px-8 py-5 rounded-2xl text-2xl font-black shadow-lg hover:bg-amber-600 transition-all w-full ${!allBidded ? 'opacity-90' : 'animate-pulse ring-4 ring-amber-300'}">
               ${allBidded ? 'إغلاق المزاد فوراً وإعلان الأسعار 🔨' : 'إنهاء الوقت فوراً (تخطي المنتظرين) 🔨'}
             </button>
           </div>
@@ -459,21 +520,27 @@
       } 
       else if (currentStep === 'reveal_bids') {
         const bidResults = teams.map(t => {
-          const bidAmount = currentBids[t.id] !== undefined ? currentBids[t.id] : 0;
+          const bidAmount = currentBids[t.id];
+          const isJoker = bidAmount === 'JOKER';
+          
           return `
-            <div class="scale-in flex flex-col items-center justify-center p-4 rounded-xl border-2 border-slate-300 bg-white shadow-sm">
-              <div class="font-bold text-slate-800 text-lg mb-2 text-center">${t.name}</div>
-              <div class="font-black text-4xl text-blue-700">${bidAmount}</div>
+            <div class="scale-in flex flex-col items-center justify-center p-5 rounded-2xl border-2 ${isJoker ? 'border-purple-300 bg-purple-50' : 'border-slate-300 bg-white'} shadow-sm relative">
+              <div class="text-3xl mb-1">${t.emoji}</div>
+              <div class="font-bold text-slate-800 text-xl mb-3 text-center truncate w-full">${t.name}</div>
+              ${isJoker 
+                  ? `<div class="font-black text-2xl text-purple-600">انسحاب 🃏</div>`
+                  : `<div class="font-black text-5xl text-blue-700">${bidAmount !== undefined ? bidAmount : 0}</div>`
+              }
             </div>
           `;
         }).join('');
 
         auctionContainer.innerHTML = `
-          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-5xl text-center border border-slate-200 mt-12 lg:mt-0">
-            <h2 class="text-3xl font-extrabold mb-6 text-slate-800">الأسعار اللي اتسجلت في السر 🤫</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">${bidResults}</div>
-            <p class="text-xl text-slate-600 font-bold mb-6">يا ترى المعروض ده كنز ولا فخ؟ ومين اللي كسب؟ 🤔</p>
-            <button onclick="showBackCard()" class="bg-blue-600 text-white px-8 py-4 rounded-xl text-2xl font-bold shadow-lg hover:bg-blue-700 w-full animate-bounce">
+          <div class="fade-in bg-white p-6 md:p-12 rounded-3xl shadow-xl w-full max-w-5xl text-center border border-slate-200 mt-12 lg:mt-0">
+            <h2 class="text-4xl font-black mb-8 text-slate-800">الأسعار اللي اتسجلت في السر 🤫</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-10">${bidResults}</div>
+            <p class="text-2xl text-slate-600 font-bold mb-8">يا ترى المعروض ده كنز ولا فخ؟ ومين اللي كسب؟ 🤔</p>
+            <button onclick="showBackCard()" class="bg-blue-600 text-white px-10 py-5 rounded-2xl text-3xl font-black shadow-xl hover:bg-blue-700 w-full animate-bounce">
               اكشف حقيقة الكارت والنتيجة 🔍
             </button>
           </div>
@@ -484,15 +551,15 @@
         const isTrap = card.type === 'trap';
         
         auctionContainer.innerHTML = `
-          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border mt-12 lg:mt-0 ${isTrap ? 'shake-intense border-red-300' : 'border-emerald-300'}">
-            <div class="text-6xl md:text-8xl mb-4 ${isTrap ? 'animate-pulse' : 'animate-bounce'}">${card.backIcon}</div>
-            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 ${isTrap?'text-red-700':'text-emerald-700'}">${card.backTitle}</h2>
-            <p class="text-slate-600 text-lg md:text-2xl mb-6 font-bold">${card.backDesc}</p>
+          <div class="fade-in bg-white p-6 md:p-10 rounded-3xl shadow-xl w-full max-w-5xl text-center border mt-12 lg:mt-0 ${isTrap ? 'shake-intense border-red-400 shadow-red-100' : 'border-emerald-400 shadow-emerald-100'}">
+            <div class="text-7xl md:text-9xl mb-6 ${isTrap ? 'animate-pulse' : 'animate-bounce'}">${card.backIcon}</div>
+            <h2 class="text-4xl md:text-6xl font-black mb-6 ${isTrap?'text-red-700':'text-emerald-700'}">${card.backTitle}</h2>
+            <p class="text-slate-700 text-xl md:text-3xl mb-8 font-bold leading-relaxed">${card.backDesc}: <span class="text-slate-500 font-semibold text-lg md:text-xl">${card.backDetails}</span></p>
             
             <!-- نتيجة العملية الحسابية -->
             ${lastMathResultHTML}
 
-            <button onclick="nextCard()" class="mt-8 bg-slate-800 text-white px-8 py-4 rounded-xl text-xl font-bold w-full hover:bg-slate-900 transition-colors shadow-lg">المعروض التالي ➡️</button>
+            <button onclick="nextCard()" class="mt-10 bg-slate-800 text-white px-8 py-5 rounded-2xl text-2xl font-black w-full hover:bg-slate-900 transition-colors shadow-2xl">المعروض التالي ➡️</button>
           </div>
         `;
       }
@@ -500,9 +567,9 @@
 
     function revealBidsScreen() {
       if (teams.length === 0) return;
-      clearInterval(auctionTimer); // Stop timer if manual click
-      playHammer(); // BOOM! Auction closed sound
-      broadcast({ type: 'WAIT' }); // Force any active mobile clients to waiting screen
+      clearInterval(auctionTimer); 
+      playHammer(); 
+      broadcast({ type: 'WAIT' }); 
       
       currentStep = 'reveal_bids';
       renderAuction();
@@ -512,79 +579,128 @@
       const card = cards[currentCardIndex];
       const isTrap = card.type === 'trap';
       
-      if (isTrap) playLose(); else playWin(); // Play result sound
+      if (isTrap) playLose(); else playWin();
 
-      let maxBid = -1;
-      let minBid = Infinity;
+      let validBids = teams.filter(t => currentBids[t.id] !== undefined && currentBids[t.id] !== 'JOKER').map(t => currentBids[t.id]);
+      let maxBid = validBids.length > 0 ? Math.max(...validBids) : -1;
+      let minBid = validBids.length > 0 ? Math.min(...validBids) : -1;
       
-      teams.forEach(t => {
-        let bid = currentBids[t.id] !== undefined ? currentBids[t.id] : 0;
-        if (bid > maxBid) maxBid = bid;
-        if (bid < minBid) minBid = bid;
-      });
-
-      let maxTeams = teams.filter(t => (currentBids[t.id]||0) === maxBid);
-      let minTeams = teams.filter(t => (currentBids[t.id]||0) === minBid);
+      let maxTeams = teams.filter(t => currentBids[t.id] === maxBid && currentBids[t.id] !== 'JOKER');
+      let minTeams = teams.filter(t => currentBids[t.id] === minBid && currentBids[t.id] !== 'JOKER');
+      let jokerTeams = teams.filter(t => currentBids[t.id] === 'JOKER');
 
       lastMathResultHTML = '';
+      
+      let resultsHTML = '';
 
       if (isTrap) {
-        lastMathResultHTML += `<div class="bg-red-50 p-5 rounded-2xl border-2 border-red-300 mt-6 text-right scale-in"><h3 class="font-extrabold text-red-800 text-2xl mb-4 text-center border-b border-red-200 pb-2">🚨 نتيـجـة الفـــخ 🚨</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
         teams.forEach(t => {
-            let bid = currentBids[t.id] || 0;
-            if (minTeams.includes(t)) {
-                t.score += 100; // Bonus for escaping
-                lastMathResultHTML += `<div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg font-bold text-base flex flex-col gap-1"><span>نجا (${t.name}) (أقل مراهن) 🎉</span><span dir="ltr" class="font-black">+100 نقطة</span></div>`;
+            let bid = currentBids[t.id];
+            if (bid === 'JOKER') {
+                t.usedJoker = true;
+                resultsHTML += `<div class="bg-purple-100 text-purple-800 p-4 rounded-xl font-bold text-lg flex items-center justify-between border border-purple-200"><span>${t.emoji} (${t.name})</span> <span class="font-black">انسحب بالجوكر 🃏</span></div>`;
+                if(hostConnections[t.id]) hostConnections[t.id].send({type: 'RESULT', status: 'joker', score: t.score});
+            } else if (minTeams.includes(t) && maxBid !== -1) {
+                t.score += 100;
+                resultsHTML += `<div class="bg-emerald-100 text-emerald-800 p-4 rounded-xl font-bold text-lg flex items-center justify-between border border-emerald-200 shadow-sm"><span>${t.emoji} (${t.name}) - أقل مراهن 🎉</span> <span dir="ltr" class="font-black text-2xl">+100</span></div>`;
+                if(hostConnections[t.id]) hostConnections[t.id].send({type: 'RESULT', status: 'win', score: t.score});
             } else {
-                t.score -= bid; // Penalty
-                lastMathResultHTML += `<div class="bg-red-100 text-red-800 p-3 rounded-lg font-bold text-base flex flex-col gap-1"><span>وقع (${t.name}) في الفخ! ❌</span><span dir="ltr" class="font-black">خسر ${bid} نقطة</span></div>`;
+                bid = bid || 0;
+                t.score -= bid;
+                resultsHTML += `<div class="bg-red-100 text-red-800 p-4 rounded-xl font-bold text-lg flex items-center justify-between border border-red-200"><span>${t.emoji} (${t.name}) - وقع في الفخ ❌</span> <span dir="ltr" class="font-black text-2xl">-${bid}</span></div>`;
+                if(hostConnections[t.id]) hostConnections[t.id].send({type: 'RESULT', status: 'lose', score: t.score});
             }
         });
-        lastMathResultHTML += `</div></div>`;
+        lastMathResultHTML = `<div class="bg-red-50 p-6 rounded-3xl border-2 border-red-300 mt-8 scale-in shadow-inner"><h3 class="font-black text-red-800 text-3xl mb-6 text-center border-b-2 border-red-200 pb-4">🚨 نتيـجـة الفـــخ 🚨</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-right">${resultsHTML}</div></div>`;
       } else {
-        lastMathResultHTML += `<div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-300 mt-6 text-right scale-in"><h3 class="font-extrabold text-emerald-800 text-2xl mb-4 text-center border-b border-emerald-200 pb-2">💎 نتيـجـة الكنـــز 💎</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
         teams.forEach(t => {
-            let bid = currentBids[t.id] || 0;
-            if (maxTeams.includes(t)) {
+            let bid = currentBids[t.id];
+            if (bid === 'JOKER') {
+                t.usedJoker = true;
+                resultsHTML += `<div class="bg-purple-100 text-purple-800 p-4 rounded-xl font-bold text-lg flex items-center justify-between border border-purple-200"><span>${t.emoji} (${t.name})</span> <span class="font-black">ضيع كنز بالجوكر 🃏</span></div>`;
+                if(hostConnections[t.id]) hostConnections[t.id].send({type: 'RESULT', status: 'joker', score: t.score});
+            } else if (maxTeams.includes(t) && maxBid !== -1) {
                 t.score += 300;
-                lastMathResultHTML += `<div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg font-bold text-base flex flex-col gap-1"><span>فاز (${t.name}) (أعلى مراهن) 🎉</span><span dir="ltr" class="font-black">+300 نقطة</span></div>`;
+                resultsHTML += `<div class="bg-emerald-100 text-emerald-800 p-4 rounded-xl font-bold text-lg flex items-center justify-between border border-emerald-300 shadow-md"><span>${t.emoji} (${t.name}) - أعلى مراهن 🎉</span> <span dir="ltr" class="font-black text-2xl">+300</span></div>`;
+                if(hostConnections[t.id]) hostConnections[t.id].send({type: 'RESULT', status: 'win', score: t.score});
             } else {
-                lastMathResultHTML += `<div class="bg-slate-100 text-slate-500 p-3 rounded-lg font-bold text-base flex flex-col gap-1"><span>(${t.name}) حظ أوفر..</span><span>0 نقطة</span></div>`;
+                resultsHTML += `<div class="bg-slate-100 text-slate-500 p-4 rounded-xl font-bold text-lg flex items-center justify-between border border-slate-200"><span>${t.emoji} (${t.name}) - حظ أوفر</span> <span class="font-black text-2xl">0</span></div>`;
+                if(hostConnections[t.id]) hostConnections[t.id].send({type: 'RESULT', status: 'neutral', score: t.score});
             }
         });
-        lastMathResultHTML += `</div></div>`;
+        lastMathResultHTML = `<div class="bg-emerald-50 p-6 rounded-3xl border-2 border-emerald-300 mt-8 scale-in shadow-inner"><h3 class="font-black text-emerald-800 text-3xl mb-6 text-center border-b-2 border-emerald-200 pb-4">💎 نتيـجـة الكنـــز 💎</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-right">${resultsHTML}</div></div>`;
       }
 
       currentStep = 'back';
-      renderSidebars(); // Update scores on the left
+      renderSidebars(); 
       renderAuction();
-    }
-
-    function startAuction() {
-      for (let i = cards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [cards[i], cards[j]] = [cards[j], cards[i]];
-      }
-      currentStep = 'front';
-      currentCardIndex = 0;
-      currentBids = {};
-      teams.forEach(t => t.score = 1000); // Reset scores
-      renderSidebars();
-      
-      broadcast({ type: 'NEW_CARD', cardTitle: cards[currentCardIndex].frontTitle });
-      renderAuction();
-      startTimer();
     }
 
     function nextCard() {
       currentStep = 'front';
       currentCardIndex++;
       currentBids = {};
+      
       if (currentCardIndex >= cards.length) {
-          document.getElementById('auction-container').innerHTML = `<h1 class="text-5xl font-black text-amber-500 scale-in">انتهى المزاد! 🏁</h1>`;
-          playWin();
+          // FINALE SCREEN
+          const auctionContainer = document.getElementById('auction-container');
+          const sorted = [...teams].sort((a, b) => b.score - a.score);
+          const first = sorted[0];
+          const second = sorted[1];
+          const third = sorted[2];
+          
+          auctionContainer.innerHTML = `
+              <div class="fade-in w-full flex flex-col items-center justify-center min-h-[70vh]">
+                  <h1 class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 mb-16 drop-shadow-lg">🏁 انتهى المزاد 🏁</h1>
+                  
+                  <div class="flex items-end justify-center gap-4 md:gap-8 h-80 mt-10 w-full max-w-4xl mx-auto border-b-8 border-slate-800 pb-2">
+                      <!-- Second -->
+                      ${second ? `
+                      <div class="flex flex-col items-center fade-in w-1/3" style="animation-delay: 0.5s; animation-fill-mode: both;">
+                          <div class="text-5xl md:text-6xl mb-3">${second.emoji}</div>
+                          <div class="font-black text-xl md:text-2xl truncate w-full text-center text-slate-700">${second.name}</div>
+                          <div class="font-black text-blue-700 mb-3 text-2xl">${second.score}💰</div>
+                          <div class="w-full h-40 bg-slate-300 rounded-t-2xl flex justify-center items-start pt-6 text-6xl font-black text-slate-500 shadow-inner border-t-4 border-slate-400">2</div>
+                      </div>` : '<div class="w-1/3"></div>'}
+                      
+                      <!-- First -->
+                      ${first ? `
+                      <div class="flex flex-col items-center fade-in scale-in z-10 w-1/3 relative" style="animation-delay: 1s; animation-fill-mode: both;">
+                          <div class="absolute -top-16 text-6xl md:text-7xl animate-bounce">👑</div>
+                          <div class="text-6xl md:text-8xl mb-3">${first.emoji}</div>
+                          <div class="font-black text-2xl md:text-3xl truncate w-full text-center text-slate-800">${first.name}</div>
+                          <div class="font-black text-amber-600 mb-3 text-3xl">${first.score}💰</div>
+                          <div class="w-full h-56 bg-gradient-to-t from-amber-500 to-amber-300 rounded-t-2xl flex justify-center items-start pt-6 text-7xl font-black text-amber-100 shadow-2xl border-t-4 border-amber-200">1</div>
+                      </div>` : '<div class="w-1/3"></div>'}
+                      
+                      <!-- Third -->
+                      ${third ? `
+                      <div class="flex flex-col items-center fade-in w-1/3" style="animation-delay: 1.5s; animation-fill-mode: both;">
+                          <div class="text-4xl md:text-5xl mb-3">${third.emoji}</div>
+                          <div class="font-black text-lg md:text-xl truncate w-full text-center text-slate-700">${third.name}</div>
+                          <div class="font-black text-orange-700 mb-3 text-xl">${third.score}💰</div>
+                          <div class="w-full h-28 bg-orange-300 rounded-t-2xl flex justify-center items-start pt-6 text-5xl font-black text-orange-100 shadow-inner border-t-4 border-orange-400">3</div>
+                      </div>` : '<div class="w-1/3"></div>'}
+                  </div>
+              </div>
+          `;
+          
+          playWin(); 
+          setTimeout(playWin, 500); // double win sound
+          
+          if(window.confetti) {
+              let duration = 8 * 1000;
+              let end = Date.now() + duration;
+              (function frame() {
+                  confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'] });
+                  confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'] });
+                  if (Date.now() < end) requestAnimationFrame(frame);
+              }());
+          }
+          broadcast({ type: 'WAIT' }); 
           return;
       }
+      
       broadcast({ type: 'NEW_CARD', cardTitle: cards[currentCardIndex].frontTitle });
       renderAuction();
       startTimer();
