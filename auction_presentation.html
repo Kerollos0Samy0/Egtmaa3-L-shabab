@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -8,11 +8,29 @@
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+    
+    /* Animations */
     .fade-in { animation: fadeIn 0.4s ease-out forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .scale-in { animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    @keyframes scaleIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    .shake-intense { animation: shakeIntense 0.5s ease-in-out; }
+    @keyframes shakeIntense {
+      0%, 100% { transform: translateX(0) rotate(0); }
+      20% { transform: translateX(-15px) rotate(-5deg); }
+      40% { transform: translateX(15px) rotate(5deg); }
+      60% { transform: translateX(-15px) rotate(-5deg); }
+      80% { transform: translateX(15px) rotate(5deg); }
+    }
+
+    /* Scrollbars */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    /* Toasts */
     #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
     .toast { background-color: #10b981; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; animation: fadeIn 0.3s ease-out forwards; }
   </style>
@@ -52,11 +70,53 @@
   </div>
 
   <script>
+    // --- Audio Engine (Generates sounds without external files) ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    
+    function initAudio() {
+        if(!audioCtx) audioCtx = new AudioContext();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    
+    function playTone(freq, type, duration, vol=0.1) {
+        if(!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e){}
+    }
+
+    function playTick() { playTone(900, 'square', 0.05, 0.05); } 
+    function playHammer() { playTone(150, 'square', 0.4, 0.4); } 
+    function playWin() { 
+        setTimeout(() => playTone(400, 'sine', 0.2, 0.15), 0);
+        setTimeout(() => playTone(500, 'sine', 0.2, 0.15), 100);
+        setTimeout(() => playTone(600, 'sine', 0.4, 0.15), 200);
+        setTimeout(() => playTone(800, 'sine', 0.6, 0.15), 300);
+    }
+    function playLose() { 
+        setTimeout(() => playTone(300, 'sawtooth', 0.3, 0.2), 0);
+        setTimeout(() => playTone(250, 'sawtooth', 0.5, 0.2), 200);
+        setTimeout(() => playTone(200, 'sawtooth', 0.8, 0.2), 400);
+    }
+
+    // --- State Variables ---
     let teams = []; 
     let currentBids = {}; 
     let hostConnections = {}; 
     let lastMathResultHTML = '';
     let isSidebarVisible = true;
+    let auctionTimer = null;
+    let timeLeft = 15;
 
     let cards = [
       { type: 'trap', frontIcon: '📈🚀', frontTitle: 'النجاح السريع', frontDesc: 'ثروة مفاجئة ونجاح صاروخي بدون أي تعب.', frontFeatures: ['أرباح خيالية في أقل من شهر', 'نظرة انبهار من كل الناس'], backIcon: '🚨📉', backTitle: 'مفاجأة: الفخ!', backDesc: 'افتقار للخبرة الحياتية', backDetails: 'خسرت كل شيء سريعاً لأنك لم تبدأ من الصفر، ودخلت في دوامة ديون.' },
@@ -118,7 +178,6 @@
       peer.on('connection', (conn) => {
         conn.on('data', (data) => {
           if (data.type === 'REGISTER') {
-            // No limits! Any number of teams can join.
             const newTeam = { id: teams.length + 1, name: data.name, score: 1000 };
             teams.push(newTeam);
             hostConnections[newTeam.id] = conn;
@@ -157,7 +216,6 @@
              <h1 class="text-3xl font-extrabold text-blue-700 mb-6">تسجيل فريق جديد 🚀</h1>
              <input type="text" id="mobileName" class="w-full p-4 text-xl border border-slate-300 rounded-xl mb-6 text-center" placeholder="اكتب اسم فريقك هنا...">
              <button id="regBtn" onclick="registerMobile()" class="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white text-xl font-bold rounded-xl disabled:opacity-50">جاري الاتصال...</button>
-             <div id="c-msg" class="mt-4 font-bold text-red-500 hidden"></div>
           </div>
         `;
       }
@@ -178,19 +236,34 @@
           if (data.type === 'REGISTERED') {
             myTeam = data.team;
             body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-emerald-300"><div class="text-6xl mb-4">✅</div><h2 class="text-2xl font-bold text-emerald-700 mb-2">أهلاً ${myTeam.name}</h2><p class="text-slate-500 font-bold">أنت الفريق رقم ${myTeam.id}. في انتظار بدء المزاد...</p></div>`;
-          } else if (data.type === 'MSG') {
-            alert(data.msg);
           } else if (data.type === 'NEW_CARD') {
             body.innerHTML = `
-              <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-slate-200">
-                 <h2 class="text-xl font-bold text-slate-800 mb-2">المعروض: ${data.cardTitle}</h2>
-                 <p class="text-sm text-slate-500 mb-6">أدخل السعر السري لفريقك (${myTeam.name})</p>
+              <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-slate-200 relative overflow-hidden">
+                 <div id="client-timer-bar" class="absolute top-0 left-0 h-2 bg-blue-500 transition-all duration-1000" style="width: 100%;"></div>
+                 <div class="mt-4 flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 truncate">المعروض: ${data.cardTitle}</h2>
+                    <div id="client-timer-text" class="text-2xl font-black text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border-2 border-slate-300">15</div>
+                 </div>
+                 <p class="text-sm text-slate-500 mb-6">أدخل السعر السري لفريقك بسرعة!</p>
                  <input type="number" id="mobileBid" class="w-full p-4 text-2xl border border-slate-300 rounded-xl mb-6 text-center" placeholder="السعر بالنقط...">
                  <button onclick="sendMobileBid()" class="w-full py-4 bg-blue-600 text-white text-2xl font-bold rounded-xl shadow-lg">إرسال السعر 🚀</button>
               </div>
             `;
+          } else if (data.type === 'TIMER') {
+            const tel = document.getElementById('client-timer-text');
+            const bar = document.getElementById('client-timer-bar');
+            if(tel && bar) {
+                tel.innerText = data.time;
+                bar.style.width = `${(data.time / 15) * 100}%`;
+                if(data.time <= 5) {
+                    tel.classList.replace('text-slate-700', 'text-red-600');
+                    tel.classList.replace('bg-slate-100', 'bg-red-100');
+                    tel.classList.replace('border-slate-300', 'border-red-400');
+                    bar.classList.replace('bg-blue-500', 'bg-red-500');
+                }
+            }
           } else if (data.type === 'WAIT') {
-            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-blue-300"><div class="text-6xl mb-4">⏳</div><h2 class="text-2xl font-bold text-blue-700 mb-2">تم إرسال سعرك!</h2><p class="text-slate-500 font-bold">ركز مع الشاشة الرئيسية لمعرفة النتيجة...</p></div>`;
+            body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in border border-blue-300"><div class="text-6xl mb-4">⏳</div><h2 class="text-2xl font-bold text-blue-700 mb-2">انتهى الوقت / تم الإرسال!</h2><p class="text-slate-500 font-bold">ركز مع الشاشة الرئيسية لمعرفة النتيجة...</p></div>`;
           }
         });
       });
@@ -207,7 +280,7 @@
         if (bid === '') { alert('يرجى كتابة السعر!'); return; }
         conn.send({ type: 'BID', teamId: myTeam.id, bid: parseInt(bid) });
         conn.send({type: 'TRIGGER_WAIT_SCREEN'}); 
-        body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in"><h2 class="text-2xl font-bold text-blue-700">تم الإرسال ⏳</h2><p>ركز مع الشاشة!</p></div>`;
+        body.innerHTML = `<div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl mt-10 text-center fade-in"><h2 class="text-2xl font-bold text-emerald-600 mb-2">تم الإرسال ⏳</h2><p class="font-bold text-slate-500">مستنيين باقي الفرق والوقت يخلص!</p></div>`;
       };
     }
 
@@ -240,13 +313,41 @@
       const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
 
       scoreContainer.innerHTML = sortedTeams.map((t, idx) => `
-        <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm mb-3">
+        <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm mb-3 transition-all duration-500">
           <div class="flex items-center gap-3">
             <span class="font-bold w-8 h-8 flex items-center justify-center rounded-full text-lg ${idx===0?'bg-amber-100 text-amber-700':'bg-slate-100 text-slate-700'}">${idx+1}</span>
             <span class="font-bold text-lg truncate">${t.name}</span>
           </div>
           <span class="font-black text-xl text-blue-700" dir="ltr">${t.score} 💰</span>
         </div>`).join('');
+    }
+
+    function startTimer() {
+        clearInterval(auctionTimer);
+        timeLeft = 15;
+        broadcast({ type: 'TIMER', time: timeLeft });
+        
+        auctionTimer = setInterval(() => {
+            timeLeft--;
+            broadcast({ type: 'TIMER', time: timeLeft });
+            
+            const hostDisplay = document.getElementById('host-timer-text');
+            const hostCircle = document.getElementById('host-timer-circle');
+            
+            if(hostDisplay) {
+                hostDisplay.innerText = timeLeft;
+                if(timeLeft <= 5 && timeLeft > 0) {
+                    hostDisplay.classList.add('text-red-600');
+                    if(hostCircle) hostCircle.classList.add('border-red-500', 'animate-pulse', 'bg-red-50');
+                    playTick(); // Ticking sound effect for suspense!
+                }
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(auctionTimer);
+                revealBidsScreen(); // Auto-close!
+            }
+        }, 1000);
     }
 
     function renderAuction() {
@@ -258,7 +359,7 @@
 
         auctionContainer.innerHTML = `
           <div class="fade-in bg-white p-6 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border border-slate-200 mt-12 lg:mt-0">
-            <div class="text-6xl md:text-8xl mb-4 md:mb-6">🎙️🔨</div>
+            <div class="text-6xl md:text-8xl mb-4 md:mb-6 animate-bounce">🎙️🔨</div>
             <h1 class="text-3xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-700">مزاد القيم والوزنات</h1>
             
             <div class="my-8 bg-slate-50 p-4 rounded-xl border border-slate-200 min-h-[120px] flex flex-col justify-center">
@@ -268,7 +369,7 @@
               </div>
             </div>
 
-            <button onclick="startAuction()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl text-2xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50" ${teams.length < 1 ? 'disabled' : ''}>
+            <button onclick="initAudio(); startAuction();" class="bg-blue-600 text-white px-8 py-4 rounded-2xl text-2xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50" ${teams.length < 1 ? 'disabled' : ''}>
               ${teams.length < 1 ? 'في انتظار فريق واحد على الأقل...' : 'بدء المزاد 🛒'}
             </button>
           </div>
@@ -280,7 +381,7 @@
         const statuses = teams.map(t => {
           const hasBid = currentBids[t.id] !== undefined;
           return `
-            <div class="flex items-center justify-between bg-white p-3 rounded-xl border ${hasBid ? 'border-emerald-400 bg-emerald-50' : 'border-slate-300'} shadow-sm">
+            <div class="flex items-center justify-between bg-white p-3 rounded-xl border ${hasBid ? 'border-emerald-400 bg-emerald-50' : 'border-slate-300'} shadow-sm transition-all duration-300">
               <div class="font-bold text-slate-800 text-sm md:text-lg">${t.name} (نقاطه: ${t.score})</div>
               <div class="font-bold ${hasBid ? 'text-emerald-600' : 'text-slate-400'}">${hasBid ? 'تم إرسال السعر ✅' : 'في الانتظار... ⏳'}</div>
             </div>
@@ -290,22 +391,30 @@
         const allBidded = teams.every(t => currentBids[t.id] !== undefined) && teams.length > 0;
 
         auctionContainer.innerHTML = `
-          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border border-slate-200 mt-12 lg:mt-0">
-            <div class="text-5xl md:text-7xl mb-3">${card.frontIcon}</div>
+          <div class="fade-in bg-white p-5 md:p-8 rounded-3xl shadow-xl w-full max-w-4xl text-center border border-slate-200 mt-12 lg:mt-0 relative overflow-hidden">
+            
+            <!-- Big Timer UI -->
+            <div class="absolute top-4 left-4 md:top-8 md:left-8 flex flex-col items-center">
+              <div id="host-timer-circle" class="w-16 h-16 md:w-24 md:h-24 rounded-full border-4 border-blue-400 flex items-center justify-center bg-white shadow-lg transition-colors duration-500">
+                <span id="host-timer-text" class="text-3xl md:text-5xl font-black text-slate-800">${timeLeft}</span>
+              </div>
+            </div>
+
+            <div class="text-5xl md:text-7xl mb-3 scale-in">${card.frontIcon}</div>
             <div class="text-slate-500 font-bold text-sm mb-2">المعروض ${currentCardIndex + 1} من ${cards.length}</div>
             <h2 class="text-2xl md:text-4xl font-bold mb-3 text-slate-900">${card.frontTitle}</h2>
-            <p class="text-lg md:text-xl text-slate-600 mb-6 font-semibold">${card.frontDesc}</p>
-            <div class="flex justify-center gap-2 mb-6">
+            <p class="text-lg md:text-xl text-slate-600 mb-4 font-semibold w-3/4 mx-auto">${card.frontDesc}</p>
+            <div class="flex justify-center gap-2 mb-6 flex-wrap">
               ${card.frontFeatures.map(f => `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold border border-blue-200">${f}</span>`).join('')}
             </div>
             
             <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200 mb-5 flex flex-col gap-3 text-right">
-              <h3 class="font-bold text-base text-slate-800">حالة مزايدة الفرق:</h3>
+              <h3 class="font-bold text-base text-slate-800">حالة المزايدة (الوقت بيجري!):</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${statuses}</div>
             </div>
 
-            <button onclick="revealBidsScreen()" class="bg-amber-600 text-white px-6 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-amber-700 transition-all w-full ${!allBidded ? 'animate-pulse' : ''}">
-              ${allBidded ? 'كل الفرق جاهزة! إغلاق المزاد وإعلان الأسعار 🔨' : 'إغلاق المزاد فوراً (تخطي المنتظرين) 🔨'}
+            <button onclick="revealBidsScreen()" class="bg-amber-600 text-white px-6 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-amber-700 transition-all w-full ${!allBidded ? 'opacity-90' : 'animate-pulse'}">
+              ${allBidded ? 'إغلاق المزاد فوراً وإعلان الأسعار 🔨' : 'إنهاء الوقت فوراً (تخطي المنتظرين) 🔨'}
             </button>
           </div>
         `;
@@ -314,9 +423,9 @@
         const bidResults = teams.map(t => {
           const bidAmount = currentBids[t.id] !== undefined ? currentBids[t.id] : 0;
           return `
-            <div class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-slate-300 bg-white shadow-sm">
+            <div class="scale-in flex flex-col items-center justify-center p-4 rounded-xl border-2 border-slate-300 bg-white shadow-sm">
               <div class="font-bold text-slate-800 text-lg mb-2 text-center">${t.name}</div>
-              <div class="font-black text-3xl text-blue-700">${bidAmount}</div>
+              <div class="font-black text-4xl text-blue-700">${bidAmount}</div>
             </div>
           `;
         }).join('');
@@ -325,7 +434,7 @@
           <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-5xl text-center border border-slate-200 mt-12 lg:mt-0">
             <h2 class="text-3xl font-extrabold mb-6 text-slate-800">الأسعار اللي اتسجلت في السر 🤫</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">${bidResults}</div>
-            <p class="text-lg text-slate-600 font-bold mb-6">يا ترى المعروض ده كنز ولا فخ؟ ومين اللي كسب؟ 🤔</p>
+            <p class="text-xl text-slate-600 font-bold mb-6">يا ترى المعروض ده كنز ولا فخ؟ ومين اللي كسب؟ 🤔</p>
             <button onclick="showBackCard()" class="bg-blue-600 text-white px-8 py-4 rounded-xl text-2xl font-bold shadow-lg hover:bg-blue-700 w-full animate-bounce">
               اكشف حقيقة الكارت والنتيجة 🔍
             </button>
@@ -337,10 +446,10 @@
         const isTrap = card.type === 'trap';
         
         auctionContainer.innerHTML = `
-          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border mt-12 lg:mt-0">
-            <div class="text-5xl md:text-7xl mb-4 ${isTrap ? 'animate-pulse' : 'animate-bounce'}">${card.backIcon}</div>
-            <h2 class="text-2xl md:text-4xl font-extrabold mb-4 ${isTrap?'text-red-700':'text-emerald-700'}">${card.backTitle}</h2>
-            <p class="text-slate-600 text-lg md:text-2xl mb-6">${card.backDesc}</p>
+          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border mt-12 lg:mt-0 ${isTrap ? 'shake-intense border-red-300' : 'border-emerald-300'}">
+            <div class="text-6xl md:text-8xl mb-4 ${isTrap ? 'animate-pulse' : 'animate-bounce'}">${card.backIcon}</div>
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 ${isTrap?'text-red-700':'text-emerald-700'}">${card.backTitle}</h2>
+            <p class="text-slate-600 text-lg md:text-2xl mb-6 font-bold">${card.backDesc}</p>
             
             <!-- نتيجة العملية الحسابية -->
             ${lastMathResultHTML}
@@ -353,6 +462,10 @@
 
     function revealBidsScreen() {
       if (teams.length === 0) return;
+      clearInterval(auctionTimer); // Stop timer if manual click
+      playHammer(); // BOOM! Auction closed sound
+      broadcast({ type: 'WAIT' }); // Force any active mobile clients to waiting screen
+      
       currentStep = 'reveal_bids';
       renderAuction();
     }
@@ -361,6 +474,8 @@
       const card = cards[currentCardIndex];
       const isTrap = card.type === 'trap';
       
+      if (isTrap) playLose(); else playWin(); // Play result sound
+
       let maxBid = -1;
       let minBid = Infinity;
       
@@ -376,7 +491,7 @@
       lastMathResultHTML = '';
 
       if (isTrap) {
-        lastMathResultHTML += `<div class="bg-red-50 p-5 rounded-2xl border-2 border-red-300 mt-6 text-right"><h3 class="font-extrabold text-red-800 text-2xl mb-4 text-center border-b border-red-200 pb-2">🚨 نتيـجـة الفـــخ 🚨</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
+        lastMathResultHTML += `<div class="bg-red-50 p-5 rounded-2xl border-2 border-red-300 mt-6 text-right scale-in"><h3 class="font-extrabold text-red-800 text-2xl mb-4 text-center border-b border-red-200 pb-2">🚨 نتيـجـة الفـــخ 🚨</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
         teams.forEach(t => {
             let bid = currentBids[t.id] || 0;
             if (minTeams.includes(t)) {
@@ -389,7 +504,7 @@
         });
         lastMathResultHTML += `</div></div>`;
       } else {
-        lastMathResultHTML += `<div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-300 mt-6 text-right"><h3 class="font-extrabold text-emerald-800 text-2xl mb-4 text-center border-b border-emerald-200 pb-2">💎 نتيـجـة الكنـــز 💎</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
+        lastMathResultHTML += `<div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-300 mt-6 text-right scale-in"><h3 class="font-extrabold text-emerald-800 text-2xl mb-4 text-center border-b border-emerald-200 pb-2">💎 نتيـجـة الكنـــز 💎</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
         teams.forEach(t => {
             let bid = currentBids[t.id] || 0;
             if (maxTeams.includes(t)) {
@@ -416,9 +531,11 @@
       currentCardIndex = 0;
       currentBids = {};
       teams.forEach(t => t.score = 1000); // Reset scores
-      broadcast({ type: 'NEW_CARD', cardTitle: cards[currentCardIndex].frontTitle });
       renderSidebars();
+      
+      broadcast({ type: 'NEW_CARD', cardTitle: cards[currentCardIndex].frontTitle });
       renderAuction();
+      startTimer();
     }
 
     function nextCard() {
@@ -426,11 +543,13 @@
       currentCardIndex++;
       currentBids = {};
       if (currentCardIndex >= cards.length) {
-          document.getElementById('auction-container').innerHTML = `<h1 class="text-5xl font-black text-amber-500">انتهى المزاد! 🏁</h1>`;
+          document.getElementById('auction-container').innerHTML = `<h1 class="text-5xl font-black text-amber-500 scale-in">انتهى المزاد! 🏁</h1>`;
+          playWin();
           return;
       }
       broadcast({ type: 'NEW_CARD', cardTitle: cards[currentCardIndex].frontTitle });
       renderAuction();
+      startTimer();
     }
 
   </script>
