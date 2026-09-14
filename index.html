@@ -60,35 +60,20 @@
 
     let cards = [
       { type: 'trap', frontIcon: '📈🚀', frontTitle: 'النجاح السريع', frontDesc: 'ثروة مفاجئة ونجاح صاروخي بدون أي تعب.', frontFeatures: ['أرباح خيالية في أقل من شهر', 'نظرة انبهار من كل الناس'], backIcon: '🚨📉', backTitle: 'مفاجأة: الفخ!', backDesc: 'افتقار للخبرة الحياتية', backDetails: 'خسرت كل شيء سريعاً لأنك لم تبدأ من الصفر، ودخلت في دوامة ديون.' },
-      
       { type: 'trap', frontIcon: '📱🤩', frontTitle: 'تريند السوشيال ميديا', frontDesc: 'ملايين المتابعين وشهرة واسعة جداً في أيام.', frontFeatures: ['عقود إعلانات خيالية', 'الكل بيتصور معاك في الشارع'], backIcon: '🚨👁️‍🗨️', backTitle: 'مفاجأة: الفخ!', backDesc: 'قيمتك أصبحت مرهونة باللايكات', backDetails: 'حملة هجوم قاسية دمرت نفسيتك وفقدت هويتك الحقيقية.' },
-      
       { type: 'trap', frontIcon: '💍💑', frontTitle: 'الارتباط المثالي', frontDesc: 'شريك حياة شكله مبهر وغني جداً.', frontFeatures: ['حياة مليئة بالهدايا والسفر', 'مظهر اجتماعي رائع يحسدك عليه الجميع'], backIcon: '🚨⛓️', backTitle: 'مفاجأة: الفخ!', backDesc: 'التعلق المرضي (Toxic)', backDetails: 'يقلل من قيمتك دائماً وتعيش في وحدة قاتلة خلف الكواليس.' },
-      
       { type: 'trap', frontIcon: '🎭🤝', frontTitle: 'القبول الاجتماعي', frontDesc: 'محبوب من الجميع بلا استثناء وتدخل أي مكان ترحب بك الناس.', frontFeatures: ['علاقات واسعة جداً', 'لا توجد أي صراعات أو خلافات'], backIcon: '🚨👻', backTitle: 'مفاجأة: الفخ!', backDesc: 'فقدت هويتك لإرضاء الجميع', backDetails: 'تلونت ولبست أقنعة كتير لحد ما نسيت أنت مين حقيقة.' },
-      
       { type: 'trap', frontIcon: '🕊️🌍', frontTitle: 'الحرية المطلقة', frontDesc: 'استقلال تام بدون أي قيود أو سلطة عليك.', frontFeatures: ['سفر ومغامرات لا تنتهي', 'تفعل ما تشاء وقتما تشاء'], backIcon: '🚨🏝️', backTitle: 'مفاجأة: الفخ!', backDesc: 'عزلة تامة وافتقاد للسند', backDetails: 'في أول أزمة حقيقية لم تجد أي شخص يقف بجانبك.' },
-      
       { type: 'trap', frontIcon: '👔👑', frontTitle: 'منصب قيادي مبكر', frontDesc: 'أصبحت مديراً لشركة كبرى في سن الـ 23 فقط.', frontFeatures: ['سلطة ومكتب فخم', 'راتب ضخم جداً'], backIcon: '🚨🥵', backTitle: 'مفاجأة: الفخ!', backDesc: 'متلازمة المحتال وضغط مدمر', backDetails: 'تعيش في رعب من أن ينكشف افتقارك للخبرة، وعجزت قبل الأوان.' },
-      
       { type: 'trap', frontIcon: '✈️🧳', frontTitle: 'تأشيرة هجرة سريعة', frontDesc: 'فيزا مفاجئة لدولة أوروبية للبدء من جديد.', frontFeatures: ['حياة جديدة بالكامل', 'تذكرة ذهاب للنجاح المبهر'], backIcon: '🚨🚧', backTitle: 'مفاجأة: الفخ!', backDesc: 'هروب بلا هدف', backDetails: 'عمل شاق لا يناسب طموحك وإحساس مرعب بالضياع والغربة.' },
-      
       { type: 'trap', frontIcon: '🧠✨', frontTitle: 'الشخصية العميقة المتفردة', frontDesc: 'تبدو أكثر ذكاءً وعمقاً من كل من حولك.', frontFeatures: ['تلفت الانتباه دائماً برأيك', 'الجميع يستمع لنقدك وانتقاداتك'], backIcon: '🚨☣️', backTitle: 'مفاجأة: الفخ!', backDesc: 'التمرد الدائم والشخصية السامة', backDetails: 'خسرت كل من يحبونك بسبب نقدك اللاذع وتعاليك عليهم.' },
-      
       { type: 'treasure', frontIcon: '🏢💡', frontTitle: 'تأسيس مشروعك الخاص', frontDesc: 'بدء شركتك الخاصة أو مشروعك المستقل اللي بتحلم بيه.', frontFeatures: ['أنت مدير نفسك', 'أرباح محتملة وتطور سريع جداً'], backIcon: '💎🏆', backTitle: 'الكنز المخفي!', backDesc: 'الدرس العملي والصلابة', backDetails: 'حتى لو واجهت فشل ومشاكل في البداية، الخبرة دي بنت شخصيتك وأسست لنجاح أسطوري بعدها.' },
-      
       { type: 'treasure', frontIcon: '🤝🔥', frontTitle: 'دائرة أصدقاء قوية', frontDesc: 'شلة مميزة وشخصياتهم قوية ومؤثرة.', frontFeatures: ['قعدة ممتعة دايماً', 'صراحة وجرأة في التعامل'], backIcon: '💎🛡️', backTitle: 'الكنز المخفي!', backDesc: 'حائط صد ضد التوهان', backDetails: 'الأصدقاء دول واجهوك بعيوبك ومنعوك تضيع، ووقفوا في ظهرك وقت الأزمات الصعبة.' },
-      
       { type: 'treasure', frontIcon: '🧘‍♂️📚', frontTitle: 'سنة من الهدوء والاستقرار', frontDesc: 'روتين مريح، دراسة وعمل في هدوء تام.', frontFeatures: ['ابتعاد عن الدوشة والدراما', 'وقت كبير جداً لنفسك'], backIcon: '💎🔑', backTitle: 'الكنز المخفي!', backDesc: 'اكتشاف الموهبة', backDetails: 'في الصمت والملل ده، أتقنت مهارة نادرة جداً جعلتك مطلوباً ومميزاً في كل مكان.' },
-      
       { type: 'treasure', frontIcon: '🔄🚪', frontTitle: 'فرصة لتغيير المسار', frontDesc: 'انتقال مفاجئ لمكان جديد أو مجال دراسة مختلف.', frontFeatures: ['مغامرة جديدة وتحدي', 'أشخاص جدد وبيئة مختلفة'], backIcon: '💎🚪', backTitle: 'الكنز المخفي!', backDesc: 'العناية الإلهية', backDetails: 'التغيير والرفض اللي اتعرضتله حماك من بيئة سامة كانت هتدمرك، ووجهك لاكتشاف شغفك الحقيقي.' },
-      
       { type: 'treasure', frontIcon: '👴👑', frontTitle: 'علاقة بشخصية حكيمة VIP', frontDesc: 'شخص ناجح وخبرة بيهتم بيك وبيدعمك.', frontFeatures: ['نصائح ذهبية واسعة', 'اهتمام شخصي بتطورك'], backIcon: '💎🧭', backTitle: 'الكنز المخفي!', backDesc: 'البوصلة والمرشد', backDetails: 'الشخص ده كان صارم معاك أحياناً، بس حماك من التفكير المفرط ورجعلك سلامك الداخلي.' },
-      
       { type: 'treasure', frontIcon: '🪙🌱', frontTitle: 'الاستقلال المالي التام', frontDesc: 'معاك اللي يغطي احتياجاتك ومفيش عليك أي ديون.', frontFeatures: ['عدم الاعتماد على أي شخص', 'مظهر بسيط ومريح'], backIcon: '💎🧘', backTitle: 'الكنز المخفي!', backDesc: 'صفر ديون = حرية مطلقة', backDetails: 'لأنك زهدت في المظاهر والماركات، تملكت راحة البال ولم تخضع لضغوط الماديات أبداً.' },
-      
       { type: 'treasure', frontIcon: '🗣️🛡️', frontTitle: 'الشجاعة والمواجهة', frontDesc: 'القدرة على التحدث بجرأة أمام الجميع.', frontFeatures: ['قوة شخصية ملحوظة', 'صراحة مطلقة مع النفس والغير'], backIcon: '💎🕊️', backTitle: 'الكنز المخفي!', backDesc: 'التحرر من عقدة الذنب', backDetails: 'شجاعتك في الاعتراف بخطأ كارثي كسبتك احترام العقلاء وحررتك من جلد الذات.' },
-      
       { type: 'treasure', frontIcon: '🚀🎨', frontTitle: 'اكتشاف شغف جديد', frontDesc: 'مجال جديد بتدخله بكل طاقتك وحماسك.', frontFeatures: ['طاقة إيجابية رهيبة', 'تركيز كامل في شيء بتحبه'], backIcon: '💎🔥', backTitle: 'الكنز المخفي!', backDesc: 'البداية الحقيقية', backDetails: 'الشغف ده خلاك تضحي وتستغنى بشجاعة، وحماك من إنك تعيش كعجوز في مكان مابيشبهكش.' }
     ];
 
@@ -133,10 +118,7 @@
       peer.on('connection', (conn) => {
         conn.on('data', (data) => {
           if (data.type === 'REGISTER') {
-            if (teams.length >= 4) {
-              conn.send({ type: 'MSG', msg: 'اكتمل العدد الأقصى للفرق (4).' });
-              return;
-            }
+            // No limits! Any number of teams can join.
             const newTeam = { id: teams.length + 1, name: data.name, score: 1000 };
             teams.push(newTeam);
             hostConnections[newTeam.id] = conn;
@@ -273,21 +255,21 @@
       
       if (currentStep === 'welcome') {
         const joinedList = teams.map(t => `<span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold shadow-sm">${t.name} ✅</span>`).join(' ');
-        const emptySlotsCount = 4 - teams.length;
-        const emptySlots = Array(emptySlotsCount).fill('<span class="bg-slate-200 text-slate-500 px-3 py-1 rounded-full border border-dashed border-slate-400">في انتظار انضمام فريق...</span>').join(' ');
 
         auctionContainer.innerHTML = `
-          <div class="fade-in bg-white p-6 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
+          <div class="fade-in bg-white p-6 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border border-slate-200 mt-12 lg:mt-0">
             <div class="text-6xl md:text-8xl mb-4 md:mb-6">🎙️🔨</div>
             <h1 class="text-3xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-700">مزاد القيم والوزنات</h1>
             
-            <div class="my-8 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <h3 class="font-bold text-lg mb-3">الفرق المنضمة للمزاد (${teams.length}/4):</h3>
-              <div class="flex flex-wrap gap-2 justify-center">${joinedList} ${emptySlots}</div>
+            <div class="my-8 bg-slate-50 p-4 rounded-xl border border-slate-200 min-h-[120px] flex flex-col justify-center">
+              <h3 class="font-bold text-lg md:text-xl mb-4">الفرق المنضمة للمزاد (${teams.length}):</h3>
+              <div class="flex flex-wrap gap-2 justify-center">
+                ${teams.length > 0 ? joinedList : '<span class="text-slate-400 font-bold">لم ينضم أي فريق بعد.. امسح الكود للبدء! 📱</span>'}
+              </div>
             </div>
 
-            <button onclick="startAuction()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl text-2xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50" ${teams.length === 0 ? 'disabled' : ''}>
-              ${teams.length === 0 ? 'في انتظار فريق واحد على الأقل...' : 'بدء المزاد 🛒'}
+            <button onclick="startAuction()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl text-2xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50" ${teams.length < 1 ? 'disabled' : ''}>
+              ${teams.length < 1 ? 'في انتظار فريق واحد على الأقل...' : 'بدء المزاد 🛒'}
             </button>
           </div>
         `;
@@ -308,7 +290,7 @@
         const allBidded = teams.every(t => currentBids[t.id] !== undefined) && teams.length > 0;
 
         auctionContainer.innerHTML = `
-          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
+          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border border-slate-200 mt-12 lg:mt-0">
             <div class="text-5xl md:text-7xl mb-3">${card.frontIcon}</div>
             <div class="text-slate-500 font-bold text-sm mb-2">المعروض ${currentCardIndex + 1} من ${cards.length}</div>
             <h2 class="text-2xl md:text-4xl font-bold mb-3 text-slate-900">${card.frontTitle}</h2>
@@ -319,7 +301,7 @@
             
             <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200 mb-5 flex flex-col gap-3 text-right">
               <h3 class="font-bold text-base text-slate-800">حالة مزايدة الفرق:</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">${statuses}</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${statuses}</div>
             </div>
 
             <button onclick="revealBidsScreen()" class="bg-amber-600 text-white px-6 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-amber-700 transition-all w-full ${!allBidded ? 'animate-pulse' : ''}">
@@ -332,17 +314,17 @@
         const bidResults = teams.map(t => {
           const bidAmount = currentBids[t.id] !== undefined ? currentBids[t.id] : 0;
           return `
-            <div class="flex items-center justify-between p-4 rounded-xl border-2 border-slate-300 bg-white shadow-sm">
-              <div class="font-bold text-slate-800 text-xl">${t.name}</div>
+            <div class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-slate-300 bg-white shadow-sm">
+              <div class="font-bold text-slate-800 text-lg mb-2 text-center">${t.name}</div>
               <div class="font-black text-3xl text-blue-700">${bidAmount}</div>
             </div>
           `;
         }).join('');
 
         auctionContainer.innerHTML = `
-          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border border-slate-200 mt-12 lg:mt-0">
+          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-5xl text-center border border-slate-200 mt-12 lg:mt-0">
             <h2 class="text-3xl font-extrabold mb-6 text-slate-800">الأسعار اللي اتسجلت في السر 🤫</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">${bidResults}</div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">${bidResults}</div>
             <p class="text-lg text-slate-600 font-bold mb-6">يا ترى المعروض ده كنز ولا فخ؟ ومين اللي كسب؟ 🤔</p>
             <button onclick="showBackCard()" class="bg-blue-600 text-white px-8 py-4 rounded-xl text-2xl font-bold shadow-lg hover:bg-blue-700 w-full animate-bounce">
               اكشف حقيقة الكارت والنتيجة 🔍
@@ -355,7 +337,7 @@
         const isTrap = card.type === 'trap';
         
         auctionContainer.innerHTML = `
-          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-3xl text-center border mt-12 lg:mt-0">
+          <div class="fade-in bg-white p-5 md:p-10 rounded-3xl shadow-xl w-full max-w-4xl text-center border mt-12 lg:mt-0">
             <div class="text-5xl md:text-7xl mb-4 ${isTrap ? 'animate-pulse' : 'animate-bounce'}">${card.backIcon}</div>
             <h2 class="text-2xl md:text-4xl font-extrabold mb-4 ${isTrap?'text-red-700':'text-emerald-700'}">${card.backTitle}</h2>
             <p class="text-slate-600 text-lg md:text-2xl mb-6">${card.backDesc}</p>
@@ -394,27 +376,27 @@
       lastMathResultHTML = '';
 
       if (isTrap) {
-        lastMathResultHTML += `<div class="bg-red-50 p-5 rounded-2xl border-2 border-red-300 mt-6 text-right"><h3 class="font-extrabold text-red-800 text-2xl mb-4 text-center border-b border-red-200 pb-2">🚨 نتيـجـة الفـــخ 🚨</h3><div class="space-y-3">`;
+        lastMathResultHTML += `<div class="bg-red-50 p-5 rounded-2xl border-2 border-red-300 mt-6 text-right"><h3 class="font-extrabold text-red-800 text-2xl mb-4 text-center border-b border-red-200 pb-2">🚨 نتيـجـة الفـــخ 🚨</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
         teams.forEach(t => {
             let bid = currentBids[t.id] || 0;
             if (minTeams.includes(t)) {
                 t.score += 100; // Bonus for escaping
-                lastMathResultHTML += `<div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg font-bold text-lg flex justify-between"><span>نجا (${t.name}) لأنه أقل مراهن! 🎉</span><span dir="ltr">+100 نقطة</span></div>`;
+                lastMathResultHTML += `<div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg font-bold text-base flex flex-col gap-1"><span>نجا (${t.name}) (أقل مراهن) 🎉</span><span dir="ltr" class="font-black">+100 نقطة</span></div>`;
             } else {
                 t.score -= bid; // Penalty
-                lastMathResultHTML += `<div class="bg-red-100 text-red-800 p-3 rounded-lg font-bold text-lg flex justify-between"><span>وقع (${t.name}) في الفخ! ❌</span><span dir="ltr">خسر ${bid} نقطة</span></div>`;
+                lastMathResultHTML += `<div class="bg-red-100 text-red-800 p-3 rounded-lg font-bold text-base flex flex-col gap-1"><span>وقع (${t.name}) في الفخ! ❌</span><span dir="ltr" class="font-black">خسر ${bid} نقطة</span></div>`;
             }
         });
         lastMathResultHTML += `</div></div>`;
       } else {
-        lastMathResultHTML += `<div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-300 mt-6 text-right"><h3 class="font-extrabold text-emerald-800 text-2xl mb-4 text-center border-b border-emerald-200 pb-2">💎 نتيـجـة الكنـــز 💎</h3><div class="space-y-3">`;
+        lastMathResultHTML += `<div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-300 mt-6 text-right"><h3 class="font-extrabold text-emerald-800 text-2xl mb-4 text-center border-b border-emerald-200 pb-2">💎 نتيـجـة الكنـــز 💎</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
         teams.forEach(t => {
             let bid = currentBids[t.id] || 0;
             if (maxTeams.includes(t)) {
                 t.score += 300;
-                lastMathResultHTML += `<div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg font-bold text-lg flex justify-between"><span>فاز (${t.name}) بالكنز (أعلى مراهن)! 🎉</span><span dir="ltr">+300 نقطة</span></div>`;
+                lastMathResultHTML += `<div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg font-bold text-base flex flex-col gap-1"><span>فاز (${t.name}) (أعلى مراهن) 🎉</span><span dir="ltr" class="font-black">+300 نقطة</span></div>`;
             } else {
-                lastMathResultHTML += `<div class="bg-slate-100 text-slate-500 p-3 rounded-lg font-bold text-lg flex justify-between"><span>فريق (${t.name}) حظ أوفر..</span><span>0 نقطة</span></div>`;
+                lastMathResultHTML += `<div class="bg-slate-100 text-slate-500 p-3 rounded-lg font-bold text-base flex flex-col gap-1"><span>(${t.name}) حظ أوفر..</span><span>0 نقطة</span></div>`;
             }
         });
         lastMathResultHTML += `</div></div>`;
