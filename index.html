@@ -1317,6 +1317,24 @@
 				display: block;
 			}
 
+		/* full screen admin panel */
+		#adminOverlay {
+			padding: 0;
+			background: var(--bg-deep);
+			backdrop-filter: none;
+		}
+		#adminOverlay .modal {
+			max-width: none;
+			width: 100%;
+			height: 100%;
+			border-radius: 0;
+			border: none;
+			padding: 40px 20px;
+			overflow-y: auto;
+			display: flex;
+			flex-direction: column;
+		}
+
 		.admin-head {
 			display: flex;
 			align-items: center;
@@ -2195,6 +2213,27 @@
 
             observeReveal('.sched-item');
         }
+        function updateSchedTabsVisibility() {
+            const btn2 = document.getElementById('schedBtnDay2');
+            const btn3 = document.getElementById('schedBtnDay3');
+            const tabsWrap = document.querySelector('.sched-tabs');
+            const indicator = document.getElementById('schedIndicator');
+
+            let visibleCount = 1;
+            if (isDayVisible(2)) { btn2.style.display = 'block'; visibleCount++; } else { btn2.style.display = 'none'; }
+            if (isDayVisible(3)) { btn3.style.display = 'block'; visibleCount++; } else { btn3.style.display = 'none'; }
+
+            if (visibleCount === 1) {
+                tabsWrap.style.display = 'none';
+            } else {
+                tabsWrap.style.display = 'flex';
+                indicator.style.width = `calc(${100 / visibleCount}% - 4px)`;
+            }
+
+            if (!isDayVisible(schedActiveDay)) {
+                switchSchedDay('1');
+            }
+        }
 
         function switchSchedDay(dayKey) {
             if (dayKey === schedActiveDay) return;
@@ -2454,6 +2493,7 @@
             buildDayManagement();
             renderDays();
             renderQaDays();
+            updateSchedTabsVisibility();
         }
 
         document.getElementById('dmNextBtn').addEventListener('click', async () => {
@@ -2464,6 +2504,7 @@
             buildDayManagement();
             renderDays();
             renderQaDays();
+            updateSchedTabsVisibility();
         });
 
         async function loadQuestions() {
@@ -2494,7 +2535,7 @@
             dayNums.forEach(dn => {
                 const day = DAYS.find(d => d.num === dn);
                 const count = allQuestions.filter(q => q.dayNum === dn).length;
-                html += `<button class="tab ${activeTab === dn ? 'active' : ''}" data-tab="${dn}">${day ? 'يوم ' + dn : dn} (${count})</button>`;
+                html += `<button class="tab ${activeTab === dn ? 'active' : ''}" data-tab="${dn}">${day ? 'الفقرة ' + ordinalFor(dn) : dn} (${count})</button>`;
             });
             dayTabs.innerHTML = html;
             dayTabs.querySelectorAll('.tab').forEach(btn => {
@@ -2513,7 +2554,7 @@
                 const date = q.ts ? new Date(q.ts).toLocaleString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
                 el.innerHTML = `
           <div class="q-top">
-            <span class="q-day">${q.dayTitle ? 'يوم ' + q.dayNum + ' — ' + q.dayTitle : ''}</span>
+            <span class="q-day">${q.dayTitle ? 'الفقرة ' + ordinalFor(q.dayNum) + ' - ' + q.dayTitle : ''}</span>
             <span class="q-time">${date}</span>
           </div>
           <div class="q-text"></div>
@@ -2539,6 +2580,7 @@
             await loadDayVisibility();
             renderDays();
             renderQaDays();
+            updateSchedTabsVisibility();
             renderSchedule(schedActiveDay);
             loadEchoQuestions();
 
