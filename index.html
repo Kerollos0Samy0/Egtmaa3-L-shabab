@@ -1703,7 +1703,7 @@
 		<section class="echo-section" id="echoSection">
 			<div class="section-heading">
 				<span class="kicker-mini">💭 مش لوحدك</span>
-				<h3>أسئلة من ناس زيك</h3>
+				<h3>أسئلة من الشباب</h3>
 			</div>
 			<div class="echo-list" id="echoList"><div class="loading-state">بيتحمل...</div></div>
 		</section>
@@ -2361,7 +2361,7 @@
                     const el = document.createElement('div');
                     el.className = 'echo-card';
                     el.innerHTML = `
-                        <div class="echo-day">${q.dayTitle ? 'يوم ' + q.dayNum + ' — ' + q.dayTitle : 'سؤال عام'}</div>
+                        <div class="echo-day">${q.dayTitle ? 'الفقرة ' + ordinalFor(q.dayNum) + ' - ' + q.dayTitle : 'سؤال عام'}</div>
                         <div class="echo-text"></div>
                     `;
                     el.querySelector('.echo-text').textContent = q.text || '';
