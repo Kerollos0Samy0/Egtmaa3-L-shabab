@@ -380,7 +380,7 @@
 			top: 4px;
 			bottom: 4px;
 			right: 4px;
-			width: calc(50% - 4px);
+			width: calc(33.333% - 4px);
 			border-radius: 999px;
 			background: linear-gradient(120deg, var(--gold-soft), var(--gold));
 			transition: transform .4s cubic-bezier(.22,1,.36,1);
@@ -388,6 +388,9 @@
 
 			.sched-indicator.day2 {
 				transform: translateX(-100%);
+			}
+			.sched-indicator.day3 {
+				transform: translateX(-200%);
 			}
 
 		.sched-timeline {
@@ -1668,6 +1671,7 @@
 			<div class="sched-tabs">
 				<button class="sched-tab active" id="schedBtnDay1" data-day="1">اليوم الأول</button>
 				<button class="sched-tab" id="schedBtnDay2" data-day="2">اليوم الثاني</button>
+				<button class="sched-tab" id="schedBtnDay3" data-day="3">اليوم الثالث</button>
 				<span class="sched-indicator" id="schedIndicator"></span>
 			</div>
 			<div class="sched-timeline" id="schedTimeline"></div>
@@ -1811,41 +1815,46 @@
             1: {
                 dateISO: '2026-09-20',
                 items: [
-                    { name: 'قداس', display: '7:00 – 9:00', start: '07:00', end: '09:00', icon: '✝️' },
-                    { name: 'تحرك', display: '9:00 – 10:00', start: '09:00', end: '10:00', icon: '🚌' },
-                    { name: 'تقديم', display: '10:00 – 11:00', start: '10:00', end: '11:00', icon: '👋' },
-                    { name: 'كلمة', display: '11:00 – 1:00', start: '11:00', end: '13:00', icon: '🎙️' },
-                    { name: 'تسليم', display: '1:00 – 1:30', start: '13:00', end: '13:30', icon: '🎒' },
-                    { name: 'السباحة', display: '1:30 – 3:00', start: '13:30', end: '15:00', icon: '🏊' },
-                    { name: 'غداء', display: '3:30 – 4:00', start: '15:30', end: '16:00', icon: '🍽️' },
-                    { name: 'راحة', display: '4:00 – 5:30', start: '16:00', end: '17:30', icon: '😴' },
-                    { name: 'كلمة', display: '6:00 – 7:00', start: '18:00', end: '19:00', icon: '🎙️' },
-                    { name: 'ورشة', display: '7:00 – 7:30', start: '19:00', end: '19:30', icon: '🛠️' },
-                    { name: 'اجتماع صلاة', display: '7:30 – 8:00', start: '19:30', end: '20:00', icon: '🙏' },
-                    { name: 'تغيير ملابس', display: '8:00 – 8:30', start: '20:00', end: '20:30', icon: '👕' },
-                    { name: 'عشاء', display: '8:30 – 9:00', start: '20:30', end: '21:00', icon: '🍽️' },
-                    { name: 'عمل يدوي', display: '9:00 – 10:00', start: '21:00', end: '22:00', icon: '🎨' },
-                    { name: 'ألعاب', display: '10:00 – 12:00', start: '22:00', end: '24:00', icon: '🎮' },
+                    { name: 'الوصول', display: '10:00 - 10:30', start: '10:00', end: '10:30', icon: '📍' },
+                    { name: 'كلمة 1', display: '10:30 - 01:00', start: '10:30', end: '13:00', icon: '📖' },
+                    { name: 'التسكين', display: '01:00 - 01:30', start: '13:00', end: '13:30', icon: '🔑' },
+                    { name: 'Pool', display: '01:00 - 03:00', start: '13:00', end: '15:00', icon: '🏊‍♂️' },
+                    { name: 'وجبة الغداء', display: '03:30 - 04:00', start: '15:30', end: '16:00', icon: '🍽️' },
+                    { name: 'راحة', display: '04:00 - 06:00', start: '16:00', end: '18:00', icon: '🛏️' },
+                    { name: 'كلمة 2', display: '06:00 - 06:30', start: '18:00', end: '18:30', icon: '📖' },
+                    { name: 'ورشة عمل 1', display: '06:30 - 07:30', start: '18:30', end: '19:30', icon: '🛠️' },
+                    { name: 'اجتماع الصلاة', display: '07:30 - 08:30', start: '19:30', end: '20:30', icon: '🙏' },
+                    { name: 'العشاء', display: '08:30 - 09:00', start: '20:30', end: '21:00', icon: '🍽️' },
+                    { name: 'عمل يدوي', display: '09:00 - 10:00', start: '21:00', end: '22:00', icon: '🎨' },
+                    { name: 'فقرة ألعاب', display: '10:00 - 12:00', start: '22:00', end: '24:00', icon: '🎯' }
                 ]
             },
             2: {
                 dateISO: '2026-09-21',
                 items: [
-                    { name: 'قداس', display: '7:00 – 9:00', start: '07:00', end: '09:00', icon: '✝️' },
-                    { name: 'فطار', display: '9:00 – 9:30', start: '09:00', end: '09:30', icon: '☕' },
-                    { name: 'تغيير ملابس', display: '9:30 – 10:00', start: '09:30', end: '10:00', icon: '👕' },
-                    { name: 'ألعاب', display: '10:00 – 12:00', start: '10:00', end: '12:00', icon: '🎮' },
-                    { name: 'السباحة', display: '12:00 – 2:00', start: '12:00', end: '14:00', icon: '🏊' },
-                    { name: 'تغيير ملابس', display: '2:00 – 2:30', start: '14:00', end: '14:30', icon: '👕' },
-                    { name: 'غداء', display: '2:30 – 3:00', start: '14:30', end: '15:00', icon: '🍽️' },
-                    { name: 'راحة', display: '3:00 – 5:00', start: '15:00', end: '17:00', icon: '😴' },
-                    { name: 'كلمة', display: '5:00 – 6:00', start: '17:00', end: '18:00', icon: '🎙️' },
-                    { name: 'ورشة', display: '6:00 – 6:30', start: '18:00', end: '18:30', icon: '🛠️' },
-                    { name: 'تسبحة', display: '6:30 – 7:30', start: '18:30', end: '19:30', icon: '🎶' },
-                    { name: 'تغيير ملابس', display: '7:30 – 8:00', start: '19:30', end: '20:00', icon: '👕' },
-                    { name: 'عشاء', display: '8:00 – 8:30', start: '20:00', end: '20:30', icon: '🍽️' },
-                    { name: 'تجهيز حفلة السمر', display: '8:30 – 9:30', start: '20:30', end: '21:30', icon: '✨' },
-                    { name: 'حفلة السمر', display: '9:30 – 12:00', start: '21:30', end: '24:00', icon: '🎉' },
+                    { name: 'القداس', display: '07:00 - 09:00', start: '07:00', end: '09:00', icon: '✝️' },
+                    { name: 'وجبة الفطار', display: '09:00 - 09:30', start: '09:00', end: '09:30', icon: '☕' },
+                    { name: 'فقرة ألعاب', display: '10:00 - 12:00', start: '10:00', end: '12:00', icon: '🎯' },
+                    { name: 'Pool', display: '12:00 - 02:00', start: '12:00', end: '14:00', icon: '🏊‍♂️' },
+                    { name: 'الغداء', display: '03:00 - 03:30', start: '15:00', end: '15:30', icon: '🍽️' },
+                    { name: 'راحة', display: '03:30 - 05:00', start: '15:30', end: '17:00', icon: '🛏️' },
+                    { name: 'كلمة 3', display: '05:00 - 05:30', start: '17:00', end: '17:30', icon: '📖' },
+                    { name: 'تسبيحة + صلاة', display: '05:30 - 07:00', start: '17:30', end: '19:00', icon: '🙏' },
+                    { name: 'فقرة ألعاب', display: '07:00 - 09:00', start: '19:00', end: '21:00', icon: '🎯' },
+                    { name: 'العشاء', display: '09:00 - 09:30', start: '21:00', end: '21:30', icon: '🍽️' },
+                    { name: 'تحضير لفقرة السمر', display: '09:30 - 10:00', start: '21:30', end: '22:00', icon: '🎭' },
+                    { name: 'حفلة السمر', display: '10:00 - 12:00', start: '22:00', end: '24:00', icon: '🎉' }
+                ]
+            },
+            3: {
+                dateISO: '2026-09-22',
+                items: [
+                    { name: 'استيقاظ + صلاة باكر', display: '08:00 - 09:00', start: '08:00', end: '09:00', icon: '🌅' },
+                    { name: 'وجبة الفطار', display: '09:00 - 09:30', start: '09:00', end: '09:30', icon: '☕' },
+                    { name: 'تسليم الغرف', display: '09:30 - 10:00', start: '09:30', end: '10:00', icon: '🚪' },
+                    { name: 'كلمة 4 + end session', display: '10:00 - 11:30', start: '10:00', end: '11:30', icon: '📖' },
+                    { name: 'Photo session', display: '11:30 - 12:30', start: '11:30', end: '12:30', icon: '📸' },
+                    { name: 'التحرك', display: '12:30', start: '12:30', end: '13:00', icon: '🚌' }
                 ]
             }
         };
@@ -2192,11 +2201,14 @@
             schedActiveDay = dayKey;
             document.getElementById('schedBtnDay1').classList.toggle('active', dayKey === '1');
             document.getElementById('schedBtnDay2').classList.toggle('active', dayKey === '2');
+            document.getElementById('schedBtnDay3').classList.toggle('active', dayKey === '3');
             document.getElementById('schedIndicator').classList.toggle('day2', dayKey === '2');
+            document.getElementById('schedIndicator').classList.toggle('day3', dayKey === '3');
             renderSchedule(dayKey);
         }
         document.getElementById('schedBtnDay1').addEventListener('click', () => switchSchedDay('1'));
         document.getElementById('schedBtnDay2').addEventListener('click', () => switchSchedDay('2'));
+        document.getElementById('schedBtnDay3').addEventListener('click', () => switchSchedDay('3'));
 
         /* ====================== where-are-you-now + countdown ====================== */
         function updateWhereNow() {
