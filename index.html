@@ -1746,7 +1746,23 @@
 		</div>
 	</div>
 
-	<script>/* ====== عدّل بيانات الأيام هنا فقط ====== */
+	<script>
+		/* ====== إصلاح مشكلة الحفظ (Local Storage Polyfill) ====== */
+		window.storage = {
+			async get(key) { return { value: localStorage.getItem(key) }; },
+			async set(key, value) { localStorage.setItem(key, value); return true; },
+			async list(prefix) { 
+				const keys = []; 
+				for(let i=0; i<localStorage.length; i++) {
+					const k = localStorage.key(i);
+					if(k.startsWith(prefix)) keys.push(k);
+				}
+				return { keys };
+			},
+			async delete(key) { localStorage.removeItem(key); return true; }
+		};
+
+		/* ====== عدّل بيانات الأيام هنا فقط ====== */
         const DAYS = [
             {
                 num: '1', date: '20/9', title: 'Ready To Discover ',
@@ -1757,21 +1773,21 @@
                 sections: [{ type: 'note', label: 'يعني ايه Desk' }]
             },
             {
-                num: '1', date: '20/9', title: 'قولتلهم هسأل ',
+                num: '2', date: '20/9', title: 'قولتلهم هسأل ',
 				image: './images/philip_kamel.jpeg',
                 imageAlt: 'صورة تعبيرية عن البحث عن الاتجاه - يوم انا رايح فين',
                 fallbackEmoji: '🧭',
                 speaker: 'د:فيليب كامل ',
             },
             {
-                num: '2', date: '21/9', title: 'مليان عيوب ولا ',
+                num: '3', date: '21/9', title: 'مليان عيوب ولا ',
 				image: './images/maged_yousef.png',
                 imageAlt: 'صورة تعبيرية عن المبادئ والقرارات - يوم حماصة زي سعيد',
                 fallbackEmoji: '⚖️',
                 speaker: 'دكتور:ماجد يوسف',
             },
             {
-                num: '3', date: '22/9', title: 'متسبنيش لدماغي ',
+                num: '4', date: '22/9', title: 'متسبنيش لدماغي ',
 				image: './images/sameh_3shm.png',
                 imageAlt: 'صورة تعبيرية عن التجربة والنمو - يوم يمكن لما اجرب اكون بعرف',
                 fallbackEmoji: '🌱',
