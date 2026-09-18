@@ -1739,8 +1739,8 @@
 			<!-- day management -->
 			<div class="dm-section">
 				<div class="dm-head">
-					<h4>إدارة الأيام</h4>
-					<button class="dm-next-btn" id="dmNextBtn">فتح اليوم التالي →</button>
+					<h4>إدارة الفقرات</h4>
+					<button class="dm-next-btn" id="dmNextBtn">فتح الفقرة التالية &rarr;</button>
 				</div>
 				<div class="dm-list" id="dmList"></div>
 			</div>
@@ -1871,7 +1871,7 @@
             return `<svg viewBox="0 0 52 52"><path class="star-shape" d="M26 3 L31 21 L49 26 L31 31 L26 49 L21 31 L3 26 L21 21 Z"/></svg><span class="num">${num}</span>`;
         }
 
-        const ORDINALS = { '1': 'الأول', '2': 'الثاني', '3': 'الثالث', '4': 'الرابع' };
+        const ORDINALS = { '1': 'الأولى', '2': 'الثانية', '3': 'الثالثة', '4': 'الرابعة' };
         function ordinalFor(num) { return ORDINALS[num] || num; }
 
         const container = document.getElementById('daysContainer');
@@ -1887,11 +1887,9 @@
                             revealObserver.unobserve(entry.target);
                         }
                     });
-                }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+                }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
             }
-            document.querySelectorAll(selector).forEach(el => {
-                if (!el.classList.contains('in-view')) revealObserver.observe(el);
-            });
+            document.querySelectorAll(selector).forEach(el => revealObserver.observe(el));
         }
 
         /* ====== day visibility / unlock system ====== */
@@ -1935,7 +1933,7 @@
                     lockedCard.className = 'day-card locked-card';
                     lockedCard.innerHTML = `
             <div class="day-head">
-              <div class="day-title">اليوم ${ordinalFor(day.num)}</div>
+              <div class="day-title">الفقرة ${ordinalFor(day.num)}</div>
               <div class="day-date">${calendarIcon}<span>${day.date}</span></div>
             </div>
             <div class="locked-msg">
@@ -2036,7 +2034,7 @@
             const text = textareaEl.value.trim();
             if (!text) return;
             if (!dayNum) {
-                statusEl.textContent = 'اختار اليوم الأول';
+                statusEl.textContent = 'يجب اختيار الفقرة أولاً';
                 statusEl.className = 'ask-status err';
                 return;
             }
@@ -2079,7 +2077,7 @@
             visibleDays.forEach(day => {
                 const btn = document.createElement('button');
                 btn.className = 'qa-day-btn' + (day.num === qaSelectedDay ? ' selected' : '');
-                btn.textContent = 'يوم ' + day.num;
+                btn.textContent = 'الفقرة ' + ordinalFor(day.num);
                 btn.dataset.num = day.num;
                 btn.dataset.title = day.title;
                 btn.addEventListener('click', () => {
@@ -2090,7 +2088,7 @@
             });
 
             if (!visibleDays.length) {
-                qaDaysWrap.innerHTML = '<span style="font-size:12.5px;color:var(--text-mute);">لسه مفيش أيام متاحة</span>';
+                qaDaysWrap.innerHTML = '<span style="font-size:12.5px;color:var(--text-mute);">لا توجد فقرات مفتوحة</span>';
             }
         }
 
@@ -2431,10 +2429,10 @@
                 row.innerHTML = `
           <div class="dm-info">
             <span class="dm-dot ${visible ? 'on' : 'off'}"></span>
-            <span>اليوم ${ordinalFor(day.num)} — ${day.title}</span>
+            <span>الفقرة ${ordinalFor(day.num)} - ${day.title}</span>
             <span class="dm-status-text ${visible ? 'on' : 'off'}">${visible ? 'ظاهر' : 'مخفي'}</span>
           </div>
-          <button class="dm-toggle-btn ${visible ? 'hide-btn' : 'show-btn'}">${visible ? 'إخفاء اليوم' : 'إظهار اليوم'}</button>
+          <button class="dm-toggle-btn ${visible ? 'hide-btn' : 'show-btn'}">${visible ? 'إخفاء الفقرة' : 'إظهار الفقرة'}</button>
         `;
                 row.querySelector('.dm-toggle-btn').addEventListener('click', () => handleToggleDay(day.num, !visible));
                 dmList.appendChild(row);
