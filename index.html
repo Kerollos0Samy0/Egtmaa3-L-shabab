@@ -1763,6 +1763,14 @@
 				<div class="dm-list" id="dmList"></div>
 			</div>
 
+			<!-- schedule days management -->
+			<div class="dm-section">
+				<div class="dm-head">
+					<h4>إدارة أيام المؤتمر (الجدول)</h4>
+				</div>
+				<div class="dm-list" id="schedDmList"></div>
+			</div>
+
 			<button class="refresh-btn" id="refreshBtn">تحديث الأسئلة</button>
 			<div class="tabs" id="dayTabs"></div>
 			<div id="qListWrap"><div class="loading-state">بيتحمل...</div></div>
@@ -1912,9 +1920,11 @@
 
         /* ====== day visibility / unlock system ====== */
         let dayVisibility = null;
+        let schedVisibility = null;
 
         async function loadDayVisibility() {
             let stored = null;
+            let storedSched = null;
             try {
                 const res = await window.storage.get(VISIBILITY_KEY, true);
                 stored = res && res.value ? JSON.parse(res.value) : null;
@@ -1922,7 +1932,17 @@
             if (!stored || typeof stored !== 'object') stored = {};
             DAYS.forEach((d, i) => { if (!(d.num in stored)) stored[d.num] = i === 0; });
             dayVisibility = stored;
+
+            try {
+                const resSched = await window.storage.get('v:schedVis', true);
+                storedSched = resSched && resSched.value ? JSON.parse(resSched.value) : null;
+            } catch (e) { storedSched = null; }
+            if (!storedSched || typeof storedSched !== 'object') storedSched = {};
+            ['1', '2', '3'].forEach((n, i) => { if (!(n in storedSched)) storedSched[n] = i === 0; });
+            schedVisibility = storedSched;
+
             await saveDayVisibility();
+            await saveSchedVisibility();
         }
 
         async function saveDayVisibility() {
@@ -1930,7 +1950,13 @@
             catch (e) { console.error('failed to save day visibility', e); }
         }
 
+        async function saveSchedVisibility() {
+            try { await window.storage.set('v:schedVis', JSON.stringify(schedVisibility), true); }
+            catch (e) { console.error('failed to save sched visibility', e); }
+        }
+
         function isDayVisible(num) { return !!(dayVisibility && dayVisibility[num]); }
+        function isSchedVisible(num) { return !!(schedVisibility && schedVisibility[num]); }
 
         function renderDays() {
             container.innerHTML = '';
@@ -2220,8 +2246,8 @@
             const indicator = document.getElementById('schedIndicator');
 
             let visibleCount = 1;
-            if (isDayVisible(2)) { btn2.style.display = 'block'; visibleCount++; } else { btn2.style.display = 'none'; }
-            if (isDayVisible(3)) { btn3.style.display = 'block'; visibleCount++; } else { btn3.style.display = 'none'; }
+            if (isSchedVisible('2')) { btn2.style.display = 'block'; visibleCount++; } else { btn2.style.display = 'none'; }
+            if (isSchedVisible('3')) { btn3.style.display = 'block'; visibleCount++; } else { btn3.style.display = 'none'; }
 
             if (visibleCount === 1) {
                 tabsWrap.style.display = 'none';
@@ -2230,7 +2256,7 @@
                 indicator.style.width = `calc(${100 / visibleCount}% - 4px)`;
             }
 
-            if (!isDayVisible(schedActiveDay)) {
+            if (!isSchedVisible(schedActiveDay)) {
                 switchSchedDay('1');
             }
         }
@@ -2400,6 +2426,7 @@
                 adminOverlay.classList.add('open');
                 buildQr();
                 buildDayManagement();
+                buildSchedDayManagement();
                 loadQuestions();
             } else {
                 pwErr.classList.add('show');
@@ -2479,13 +2506,35 @@
 
             const nextBtn = document.getElementById('dmNextBtn');
             const nextLocked = DAYS.find(d => !isDayVisible(d.num));
-            if (nextLocked) { nextBtn.textContent = 'فتح اليوم التالي →'; nextBtn.disabled = false; }
-            else { nextBtn.textContent = 'كل الأيام مفتوحة ✓'; nextBtn.disabled = true; }
+            if (nextLocked) { nextBtn.textContent = 'فتح الفقرة التالية &rarr;'; nextBtn.disabled = false; }
+            else { nextBtn.textContent = 'تم فتح كل الفقرات ✓'; nextBtn.disabled = true; }
+        }
+
+        function buildSchedDayManagement() {
+            const list = document.getElementById('schedDmList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            ['1', '2', '3'].forEach(num => {
+                const visible = isSchedVisible(num);
+                const row = document.createElement('div');
+                row.className = 'dm-item';
+                row.innerHTML = `
+          <div class="dm-info">
+            <span class="dm-dot ${visible ? 'on' : 'off'}"></span>
+            <span>اليوم ${ordinalFor(num)}</span>
+            <span class="dm-status-text ${visible ? 'on' : 'off'}">${visible ? 'ظاهر' : 'مخفي'}</span>
+          </div>
+          <button class="dm-toggle-btn ${visible ? 'hide-btn' : 'show-btn'}">${visible ? 'إخفاء اليوم' : 'إظهار اليوم'}</button>
+        `;
+                row.querySelector('.dm-toggle-btn').addEventListener('click', () => handleToggleSchedDay(num, !visible));
+                list.appendChild(row);
+            });
         }
 
         async function handleToggleDay(num, makeVisible) {
             if (!makeVisible) {
-                const ok = window.confirm('هل أنت متأكد أنك تريد إخفاء هذا اليوم؟');
+                const ok = window.confirm('هل أنت متأكد أنك تريد إخفاء هذه الفقرة؟');
                 if (!ok) return;
             }
             dayVisibility[num] = makeVisible;
@@ -2493,6 +2542,16 @@
             buildDayManagement();
             renderDays();
             renderQaDays();
+        }
+
+        async function handleToggleSchedDay(num, makeVisible) {
+            if (!makeVisible) {
+                const ok = window.confirm('هل أنت متأكد أنك تريد إخفاء هذا اليوم من الجدول؟');
+                if (!ok) return;
+            }
+            schedVisibility[num] = makeVisible;
+            await saveSchedVisibility();
+            buildSchedDayManagement();
             updateSchedTabsVisibility();
         }
 
